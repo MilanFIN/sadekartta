@@ -4,6 +4,22 @@
   height: 100vh;
 }
 
+
+.leaflet-tooltip-top:before, 
+.leaflet-tooltip-bottom:before, 
+.leaflet-tooltip-left:before, 
+.leaflet-tooltip-right:before {
+    border: none !important;
+}
+
+.tooltip {
+  background: rgba(0, 0, 0, 0) !important;
+  border: none !important;
+  font-size: 10;
+  box-shadow: none !important;
+  color: white !important;
+}
+
 .App {
   text-align: center;
 }

@@ -1,11 +1,26 @@
-import { MapContainer, TileLayer, useMap, Marker, Popup } from 'react-leaflet'
+import { MapContainer, TileLayer, useMap, Marker, Popup, Tooltip} from 'react-leaflet'
 
 import 'leaflet/dist/leaflet.css';
 import React, { useRef, useEffect, useState } from "react";
+import Leaflet from 'leaflet'
 import { isNull } from 'util';
 import { LatLng } from 'leaflet';
+import iconUrl from "./marker.png";
+
 
 const RAINVALUE = {lat: 0, lon: 0, date: new Date(0), value: 0}
+
+
+
+export const newicon = new Leaflet.Icon({
+  iconUrl: iconUrl,
+
+  //iconAnchor: [12, 12],
+  popupAnchor: [0, -23],
+  iconSize: [40, 40],
+})
+
+
 
 export default () => {
   const mapRef = useRef(null);
@@ -16,13 +31,14 @@ export default () => {
     {
       lat: 0,
       lng: 0,
+      date: new Date(0),
+      value: 0
     },
   ]);
 
 
 
   useEffect(() => {
-    setMarkers([]);
 
 
     fetch("https://opendata.fmi.fi/wfs?service=WFS&version=2.0.0&request=getFeature&storedquery_id=fmi::observations::weather::daily::simple&place=helsinki&starttime=2023-01-27T00:00:00Z&endtime=2023-01-29T00:00:00Z&")
@@ -74,6 +90,7 @@ export default () => {
       console.log(rainValues)
       console.log(rainValues.get("60.17523 24.94459").date)
       let val = rainValues.get("60.17523 24.94459");
+      
       setMarkers([...markers, val]);
 
       });
@@ -86,10 +103,11 @@ export default () => {
         attribution='&copy; <a href="http://osm.org/copyright%22%3EOpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      {markers.map((position, idx) => 
-        <Marker key={`marker-${idx}`} position={position}>
+      {markers.map((elem, idx) => 
+        <Marker key={`marker-${idx}`} position={elem} icon={newicon} >
+                  <Tooltip direction="center" offset={[0, 0]} opacity={1}  permanent={true} className={"tooltip"} >{elem.value+"mm"}   </Tooltip>
         <Popup>
-          <span>A pretty CSS3 popup. <br/> Easily customizable.</span>
+          <span>{elem.date.toLocaleDateString()}</span>
         </Popup>
       </Marker>
       )}
@@ -97,3 +115,6 @@ export default () => {
 
   );
 };
+
+
+
