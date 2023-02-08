@@ -15,10 +15,11 @@
 .tooltip {
   background: rgba(0, 0, 0, 0) !important;
   border: none !important;
-  font-size: 10;
+  font-size: 13px;
   box-shadow: none !important;
-  color: white !important;
+  color: lightgrey !important;
 }
+
 
 .App {
   text-align: center;

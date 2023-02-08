@@ -1,4 +1,4 @@
-import { MapContainer, TileLayer, useMap, Marker, Popup, Tooltip} from 'react-leaflet'
+import { MapContainer, TileLayer, useMap, Marker, Popup, Tooltip, Pane} from 'react-leaflet'
 
 import 'leaflet/dist/leaflet.css';
 import React, { useRef, useEffect, useState } from "react";
@@ -45,6 +45,7 @@ export default () => {
   let markers2: any[] = [[60.17523, 24.94459]];
   let initialObj: RainValue[] | (() => RainValue[]) = [];
   const  [markers, setMarkers]  = useState<RainValue[]>(initialObj);
+  let rainValues :Array<RainValue> = [];
 
   let initialized = false;
 
@@ -63,10 +64,23 @@ export default () => {
     const startDateString = startDate.toISOString();
     const endDateString = currentDate.toISOString();
 
-    let STATIONS = ["helsinki", "pirttikoski", "tottijärvi"];
+    let STATIONS = ["hervanta", "lahti", "helsinki", "pirttikoski", "sulkavankylä", "Simanala", "Kaaresuvanto", "Mustikkamäki",
+                    "Purola", "Palokki", "Kumpula", "Sallila", "Kontiojärvi", "Inari", "Kärjenkoski", "Huhtilampi",
+                    "Pyhäselkä", "Pärnämäki", "Hyytiälä", "Muuratjärvi", "Paltaniemi", "Mehtäkylä", "Pitkäsenkylä",
+                    
+                    "Kangasniemi", "Tastula", "Pulju", "Korpijoki", "Rausenkulma", "Kattilamaa", "Utti",
+
+                    "Voikoski", "Apaja", "Karttula", "Hirvijärvi", "Pyörni", "Teeriranta", "Lamminkäyrä", "Leppäkorpi",
+                    "Tuorila", "Pitkäaho", "Pirttiperä", "Riimala", "Tottijärvi", "Mujejärvi", "Ylimarkku", "Teinikivi", "Viuruniemi", 
+                    "Utö", "Pelkosenniemi", "Raistakka", "Jaurakkajärvi", "Sarakylä", "Kotila", "Hiidenniemi", "Yläne",
+                    "Ylä-Luosta", "Mustavaara", "Kotaniemi",  "Värriötunturi", "Laukansaari", "Savonranta", "Kelloselkä",
+                    "Savukoski", "Kestilä", "Sjundby","Näljänkä", "Pesiö", "Iisvesi", "Inkee", "Kauppilankylä",
+                     "Särkijärvi", "Itätulli",  "Kaarakkala", "Hiiskula", "Koivuniemi", "Vähäkangas", "Kalaniemi",
+                  ];
+
+    //STATIONS = [];
 
     STATIONS.forEach(station => {
-      console.log(station)
 
       
       fetch("https://opendata.fmi.fi/wfs?service=WFS&version=2.0.0&request=getFeature&storedquery_id=fmi::observations::weather::daily::simple&place="+station+"&starttime="+startDateString+"&endtime="+endDateString+"&")
@@ -88,6 +102,7 @@ export default () => {
           let type = item.getElementsByTagName('BsWfs:ParameterName')[0].textContent;
           if (type === "rrday") {
             let valueStr = item.getElementsByTagName('BsWfs:ParameterValue')[0].textContent;
+            console.log(valueStr)
             if (valueStr !== "NaN" && valueStr !== null) {
               let digitValue = parseFloat(valueStr);
               if (digitValue >= 0) {
@@ -122,9 +137,19 @@ export default () => {
         let val = latestRainValue //("60.17523 24.94459");
 
         if (position !== "") {
-          console.log(val)
-          setMarkers(markers =>[...markers, val]);
+          
+            if (rainValues.some(e => e.lat == val.lat && e.lon == val.lon)) {
+              console.log("LÖYTYY")
+            }
+            else {
+              setMarkers(markers =>[...markers, val]);
+              rainValues.push(val)
+
+            }
+  
         }
+
+        
         
         });
 
@@ -144,12 +169,18 @@ export default () => {
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       {markers.map((elem, idx) => 
-        <Marker key={`marker-${idx}`} position={elem.getPosition()} icon={newicon} >
-                  <Tooltip direction="center" offset={[0, 0]} opacity={1}  permanent={true} className={"tooltip"} >{elem.value+"mm"}   </Tooltip>
-        <Popup>
-          <span>{elem.date.toLocaleDateString()}</span>
-        </Popup>
-      </Marker>
+        <Pane name={elem.position} style={{ zIndex: 1000+idx*3 }}>
+            <Marker key={`marker-${idx}`} position={elem.getPosition()} icon={newicon}  >
+              <Pane name={elem.position +"_tooltip"} style={{ zIndex: 1001+idx*3 }}>
+                      <Tooltip direction="center" offset={[0, 0]} opacity={1}  permanent={true} className={"tooltip"} ><b>{elem.value+"mm"}</b>   </Tooltip>
+              </Pane>
+              <Pane name={elem.position +"_popup"} style={{ zIndex: 5001 }}>
+                <Popup>
+                  <span>{elem.date.toLocaleDateString()}</span>
+                </Popup>
+              </Pane>
+          </Marker>
+        </Pane>
   )}
     </MapContainer>
 
@@ -158,3 +189,4 @@ export default () => {
 
 
 
+//        
