@@ -37,7 +37,69 @@ export const newicon = new Leaflet.Icon({
   iconSize: [50, 50],
 })
 
+const ICONSVG = `<svg
+viewBox="0 0 11 11"
+xmlns="http://www.w3.org/2000/svg"
+>
+<g
+  id="layer1">
+ <circle
+    style="fill:#000000;fill-opacity:1;stroke-width:0.70785"
+    id="path4253"
+    cx="5.5"
+    cy="5.5"
+    r="5.5" />
+ <circle
+    style="fill:ICONCOLOR;fill-opacity:1;stroke-width:0.316687"
+    id="bluebkg"
+    cx="5.5"
+    cy="5.5"
+    r="5.4000001" />
+</g>
+</svg>
 
+`
+
+
+
+
+function getIcon(value: number) {
+  console.log(iconUrl);
+
+  let iconSvg = ICONSVG;
+  //#1715ff
+  
+  if (value > 0.5) {
+    iconSvg = iconSvg.replace("ICONCOLOR","#1515ff");
+  }
+  else {
+    iconSvg = iconSvg.replace("ICONCOLOR", "#15aa15");
+  }
+  
+  
+
+  
+  let icon = new Leaflet.Icon({
+    iconUrl: iconUrl,//iconUrl.toString(),
+  
+    //iconAnchor: [12, 12],
+    popupAnchor: [0, -25],
+    //iconSize: [40, 40],
+    iconSize: [50, 50],
+  })
+  console.log(icon)
+
+  const svgIcon = Leaflet.divIcon({
+    html: iconSvg,
+      className: "",
+      iconSize: [50, 50],
+      popupAnchor: [0,-25],
+      //iconAnchor: [12, 40],
+  });
+
+
+  return svgIcon;
+}
 
 export default () => {
   const mapRef = useRef(null);
@@ -165,14 +227,14 @@ export default () => {
 }, []);
 
   return (
-    <MapContainer center={{ lat: 60.17523, lng: 24.94459 }} zoom={3} zoomControl={false}>
+    <MapContainer center={{ lat: 60.17523, lng: 24.94459 }} zoom={3} zoomControl={true} >
       <TileLayer
         attribution='&copy; <a href="http://osm.org/copyright%22%3EOpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       {markers.map((elem, idx) => 
         <Pane name={elem.position} style={{ zIndex: 1000+idx*3 }}>
-            <Marker key={`marker-${idx}`} position={elem.getPosition()} icon={newicon} >
+            <Marker key={`marker-${idx}`} position={elem.getPosition()} icon={getIcon(elem.value)} >
               <Pane name={elem.position +"_tooltip"} style={{ zIndex: 1001+idx*3 }}>
                       <Tooltip direction="center" offset={[0, 0]} opacity={1}  permanent={true} className={"tooltip"} ><b>{elem.value+"mm"}</b>   </Tooltip>
               </Pane>
@@ -184,6 +246,8 @@ export default () => {
           </Marker>
         </Pane>
   )}
+
+
     </MapContainer>
 
   );

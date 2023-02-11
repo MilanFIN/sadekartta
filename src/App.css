@@ -1,10 +1,13 @@
 
+
+
 #container {
   height: 90vh;
   width: 90%;
   margin-top: 5vh;
   margin-left: 5%;
   border: 5px solid #000;
+  border-radius: 25px;
 }
 
 
@@ -12,6 +15,8 @@
 .leaflet-container {
   width: 100wh; 
   height: 90vh;
+  border-radius: 20px;
+
 }
 
 
