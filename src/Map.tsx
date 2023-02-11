@@ -50,11 +50,14 @@ export default () => {
   let initialized = false;
 
 
+
   useEffect(() => {
 
     if (initialized) {
       return;
     }
+
+
 
     let currentDate = new Date();
 
@@ -78,7 +81,7 @@ export default () => {
                      "Särkijärvi", "Itätulli",  "Kaarakkala", "Hiiskula", "Koivuniemi", "Vähäkangas", "Kalaniemi",
                   ];
 
-    //STATIONS = [];
+    STATIONS = ["hervanta"];
 
     STATIONS.forEach(station => {
 
@@ -139,7 +142,6 @@ export default () => {
         if (position !== "") {
           
             if (rainValues.some(e => e.lat == val.lat && e.lon == val.lon)) {
-              console.log("LÖYTYY")
             }
             else {
               setMarkers(markers =>[...markers, val]);
@@ -163,14 +165,14 @@ export default () => {
 }, []);
 
   return (
-    <MapContainer center={{ lat: 60.17523, lng: 24.94459 }} zoom={3}>
+    <MapContainer center={{ lat: 60.17523, lng: 24.94459 }} zoom={3} zoomControl={false}>
       <TileLayer
         attribution='&copy; <a href="http://osm.org/copyright%22%3EOpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       {markers.map((elem, idx) => 
         <Pane name={elem.position} style={{ zIndex: 1000+idx*3 }}>
-            <Marker key={`marker-${idx}`} position={elem.getPosition()} icon={newicon}  >
+            <Marker key={`marker-${idx}`} position={elem.getPosition()} icon={newicon} >
               <Pane name={elem.position +"_tooltip"} style={{ zIndex: 1001+idx*3 }}>
                       <Tooltip direction="center" offset={[0, 0]} opacity={1}  permanent={true} className={"tooltip"} ><b>{elem.value+"mm"}</b>   </Tooltip>
               </Pane>

@@ -1,7 +1,17 @@
 
+#container {
+  height: 90vh;
+  width: 90%;
+  margin-top: 5vh;
+  margin-left: 5%;
+  border: 5px solid #000;
+}
+
+
+
 .leaflet-container {
   width: 100wh; 
-  height: 100vh;
+  height: 90vh;
 }
 
 

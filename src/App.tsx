@@ -17,8 +17,10 @@ function App() {
      />
 
 
-      <Map/>
-      <div id="map"></div>
+      <div id="container">
+      <Map />
+
+      </div>
 
     </div>
   );
