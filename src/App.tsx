@@ -1,13 +1,40 @@
-import React from 'react';
+import React, {useRef} from 'react';
 import logo from './logo.svg';
 import './App.css';
 
-import Map from "./Map";
+import MapComponent from "./MapComponent";
 
 const position = [51.505, -0.09]
 
 
+const MyButton = ((props:any) => {
+  const addZoom = (() => {
+    const map = props.mapRef.current
+
+    let zoom = map.setView(map.getCenter(), map.getZoom()+1);
+  }) 
+  const subZoom = (() => {
+    const map = props.mapRef.current
+
+    let zoom = map.setView(map.getCenter(), map.getZoom()+-1);
+  }) ;
+
+  
+  return (
+    <div>
+      <button onClick={addZoom}>Zoom +</button>
+      
+      <button onClick={subZoom}>Zoom -</button>
+    </div>
+  
+  )
+})
+
+
 function App() {
+
+  const mapRef = useRef();
+
   return (
     <div className="App">
 
@@ -16,9 +43,11 @@ function App() {
      integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI="
      />
 
-
+      <MyButton mapRef={mapRef} />
       <div id="container">
-      <Map />
+
+
+      <MapComponent mapRef={mapRef}/>
 
       </div>
 

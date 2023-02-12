@@ -7,6 +7,8 @@ import { isNull } from 'util';
 import { LatLng } from 'leaflet';
 import iconUrl from "./marker.svg";//"./marker.svg";
 
+import InnerObj from "./innerobj"
+
 
 const RAINVALUE = {lat: 0, lon: 0, date: new Date(0), value: 0}
 class RainValue {
@@ -101,8 +103,10 @@ function getIcon(value: number) {
   return svgIcon;
 }
 
-export default () => {
-  const mapRef = useRef(null);
+export default (props:any) => {
+
+
+
 
   let markers2: any[] = [[60.17523, 24.94459]];
   let initialObj: RainValue[] | (() => RainValue[]) = [];
@@ -247,6 +251,9 @@ export default () => {
         </Pane>
   )}
 
+<button className="test">Test</button>
+
+      <InnerObj mapRef={props.mapRef}/>
 
     </MapContainer>
 
@@ -256,3 +263,5 @@ export default () => {
 
 
 //        
+
+
