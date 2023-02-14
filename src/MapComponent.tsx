@@ -1,7 +1,7 @@
 import { MapContainer, TileLayer, useMap, Marker, Popup, Tooltip, Pane} from 'react-leaflet'
 
 import 'leaflet/dist/leaflet.css';
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState, useImperativeHandle, forwardRef } from "react";
 import Leaflet from 'leaflet'
 import { isNull } from 'util';
 import { LatLng } from 'leaflet';
@@ -103,9 +103,35 @@ function getIcon(value: number) {
   return svgIcon;
 }
 
-export default (props:any) => {
+
+// Define the handle types which will be passed to the forwardRef
+export type MapComponentHandle = {
+  f: () => void;
+};
+
+type MapComponentProps = {
+  mapRef: any;
+};
+
+//export default function MapComponent(props:any)  {
+  //const MapComponent = (props:any, ref:any) => {
+
+const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, ref) => {
+//const MapComponent = forwardRef(props:any, ref:any) => {
 
 
+    useImperativeHandle(ref, () => ({
+      f() {
+        alert("cleared!");
+      }
+
+    }));
+
+    function test() {
+      console.log("asd")
+    }
+  
+  //props.mapContainerRef.current = useRef(this);  
 
 
   let markers2: any[] = [[60.17523, 24.94459]];
@@ -115,6 +141,10 @@ export default (props:any) => {
 
   let initialized = false;
 
+
+  const setAcceptedLimit = (value:number) => {
+    console.log(value)
+  }
 
 
   useEffect(() => {
@@ -258,7 +288,9 @@ export default (props:any) => {
     </MapContainer>
 
   );
-};
+});
+
+export default MapComponent;
 
 
 
