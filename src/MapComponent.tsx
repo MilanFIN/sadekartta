@@ -10,7 +10,6 @@ import iconUrl from "./marker.svg";//"./marker.svg";
 import InnerObj from "./innerobj"
 
 
-const RAINVALUE = {lat: 0, lon: 0, date: new Date(0), value: 0}
 class RainValue {
   position: string;
   lat: number;
@@ -29,15 +28,6 @@ class RainValue {
   }
 }
 
-
-export const newicon = new Leaflet.Icon({
-  iconUrl: iconUrl,//iconUrl.toString(),
-
-  //iconAnchor: [12, 12],
-  popupAnchor: [0, -25],
-  //iconSize: [40, 40],
-  iconSize: [50, 50],
-})
 
 const ICONSVG = `<svg
 viewBox="0 0 11 11"
@@ -65,31 +55,17 @@ xmlns="http://www.w3.org/2000/svg"
 
 
 
-function getIcon(value: number) {
-  console.log(iconUrl);
+function getIcon(value: number, acceptedLimit:number) {
 
   let iconSvg = ICONSVG;
   //#1715ff
   
-  if (value > 0.5) {
+  if (value > acceptedLimit) {
     iconSvg = iconSvg.replace("ICONCOLOR","#1515ff");
   }
   else {
     iconSvg = iconSvg.replace("ICONCOLOR", "#15aa15");
   }
-  
-  
-
-  
-  let icon = new Leaflet.Icon({
-    iconUrl: iconUrl,//iconUrl.toString(),
-  
-    //iconAnchor: [12, 12],
-    popupAnchor: [0, -25],
-    //iconSize: [40, 40],
-    iconSize: [50, 50],
-  })
-  console.log(icon)
 
   const svgIcon = Leaflet.divIcon({
     html: iconSvg,
@@ -106,46 +82,31 @@ function getIcon(value: number) {
 
 // Define the handle types which will be passed to the forwardRef
 export type MapComponentHandle = {
-  f: () => void;
+  updateAcceptedRainValue: (value:number) => void;
 };
 
 type MapComponentProps = {
   mapRef: any;
 };
 
-//export default function MapComponent(props:any)  {
-  //const MapComponent = (props:any, ref:any) => {
-
 const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, ref) => {
-//const MapComponent = forwardRef(props:any, ref:any) => {
 
-
-    useImperativeHandle(ref, () => ({
-      f() {
-        alert("cleared!");
-      }
-
-    }));
-
-    function test() {
-      console.log("asd")
-    }
-  
-  //props.mapContainerRef.current = useRef(this);  
-
-
-  let markers2: any[] = [[60.17523, 24.94459]];
   let initialObj: RainValue[] | (() => RainValue[]) = [];
-  const  [markers, setMarkers]  = useState<RainValue[]>(initialObj);
-  let rainValues :Array<RainValue> = [];
+  const [markers, setMarkers]  = useState<RainValue[]>(initialObj);
+  const [acceptedLimit, setAcceptedLimit]  = useState(0.2);
+
 
   let initialized = false;
 
 
-  const setAcceptedLimit = (value:number) => {
-    console.log(value)
-  }
 
+  useImperativeHandle(ref, () => ({
+    updateAcceptedRainValue(value:number) {
+      setAcceptedLimit(value);
+
+    }
+  })
+  );
 
   useEffect(() => {
 
@@ -154,6 +115,7 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
     }
 
 
+    let rainValues :Array<RainValue> = [];
 
     let currentDate = new Date();
 
@@ -177,7 +139,7 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
                      "Särkijärvi", "Itätulli",  "Kaarakkala", "Hiiskula", "Koivuniemi", "Vähäkangas", "Kalaniemi",
                   ];
 
-    STATIONS = ["hervanta"];
+    //STATIONS = ["hervanta"];
 
     STATIONS.forEach(station => {
 
@@ -201,7 +163,6 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
           let type = item.getElementsByTagName('BsWfs:ParameterName')[0].textContent;
           if (type === "rrday") {
             let valueStr = item.getElementsByTagName('BsWfs:ParameterValue')[0].textContent;
-            console.log(valueStr)
             if (valueStr !== "NaN" && valueStr !== null) {
               let digitValue = parseFloat(valueStr);
               if (digitValue >= 0) {
@@ -233,7 +194,7 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
         }
   
 
-        let val = latestRainValue //("60.17523 24.94459");
+        let val = latestRainValue;
 
         if (position !== "") {
           
@@ -266,9 +227,12 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
         attribution='&copy; <a href="http://osm.org/copyright%22%3EOpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      {markers.map((elem, idx) => 
+      
+      {markers.length != 0 ?
+      
+      markers.map((elem, idx) => 
         <Pane name={elem.position} style={{ zIndex: 1000+idx*3 }}>
-            <Marker key={`marker-${idx}`} position={elem.getPosition()} icon={getIcon(elem.value)} >
+            <Marker key={`marker-${idx}`} position={elem.getPosition()} icon={getIcon(elem.value, acceptedLimit)} >
               <Pane name={elem.position +"_tooltip"} style={{ zIndex: 1001+idx*3 }}>
                       <Tooltip direction="center" offset={[0, 0]} opacity={1}  permanent={true} className={"tooltip"} ><b>{elem.value+"mm"}</b>   </Tooltip>
               </Pane>
@@ -279,7 +243,8 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
               </Pane>
           </Marker>
         </Pane>
-  )}
+      )
+    : null}
 
 <button className="test">Test</button>
 
@@ -291,9 +256,4 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
 });
 
 export default MapComponent;
-
-
-
-//        
-
 
