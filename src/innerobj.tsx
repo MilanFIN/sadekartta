@@ -1,7 +1,7 @@
 
 
 
-import { MapContainer, TileLayer, useMap, Marker, Popup, Tooltip, Pane} from 'react-leaflet'
+import { MapContainer, TileLayer, useMap, Marker, Popup, Tooltip, Pane, useMapEvents} from 'react-leaflet'
 
 
 import React, { useRef, useEffect, useState } from "react";
@@ -10,5 +10,19 @@ import React, { useRef, useEffect, useState } from "react";
 export default function InnerObj(props:any) {
 	const map = useMap();
 	props.mapRef.current = map;  
+
+
+    const [zoomLevel, setZoomLevel] = useState(5); // initial zoom level provided for MapContainer
+    
+    const mapEvents = useMapEvents({
+        zoomend: () => {
+			props.zoomChanged(mapEvents.getZoom())
+            setZoomLevel(mapEvents.getZoom());
+        },
+    });
+
+
+
+
 	return null;
 };

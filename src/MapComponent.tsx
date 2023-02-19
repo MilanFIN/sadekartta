@@ -94,6 +94,7 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
   let initialObj: RainValue[] | (() => RainValue[]) = [];
   const [markers, setMarkers]  = useState<RainValue[]>(initialObj);
   const [acceptedLimit, setAcceptedLimit]  = useState(0.2);
+  const [proximityLimit, setProximityLimit]  = useState(20 / 3 -1);
 
 
   let initialized = false;
@@ -107,6 +108,16 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
     }
   })
   );
+
+  const addAndSortMarkers = (newValue:RainValue) => {
+    markers.push(newValue);
+    let newMarkers = markers.sort((a, b) => (a.date > b.date) ? 1 : -1);
+
+    setMarkers(markers =>[...newMarkers] )
+    //markers.push(newValue);
+    //setMarkers(markers);
+
+  }
 
   useEffect(() => {
 
@@ -197,15 +208,10 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
 
         if (position !== "") {
           
-            if (rainValues.some(e => e.lat == val.lat && e.lon == val.lon)) {
+            if (markers.some(e => e.lat == val.lat && e.lon == val.lon)) {
             }
             else {
-              //setMarkers(markers =>[...markers, val]);
-              rainValues.push(val);
-              rainValues.sort((a, b) => (a.date > b.date) ? 1 : -1);
-
-              setMarkers(rainValues);
-
+              addAndSortMarkers(val)
             }
   
         }
@@ -225,18 +231,29 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
 
   const canDisplayMarker = (value:RainValue, ind:number) => {
 
-    let proximitylimit = 0.1//degrees
     let collides = false;
     if (ind > 0) {
       for (let i = 0; i < ind-1; i++ ) {
         let elem = markers.at(i)!;
-        if (  Math.abs(elem.lon - value.lon) < proximitylimit && Math.abs(elem.lat - value.lat) < proximitylimit) { //
+        if (  Math.abs(elem.lon - value.lon) < proximityLimit && Math.abs(elem.lat - value.lat) < proximityLimit) { //
           collides = true;
         }
       }
   
     }
     return !collides;
+  }
+
+
+
+  const zoomChanged = (zoomLevel:number) => {
+
+    let proxLimit = 20 / zoomLevel -1;
+    if (proxLimit < 0) {
+      proxLimit = 0;
+    }
+    console.log(proxLimit);
+    setProximityLimit(proxLimit)
   }
 
   return (
@@ -249,12 +266,13 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
       {markers.map((elem, idx) => 
 
         {if (canDisplayMarker(elem, idx)) {
-          return <Pane name={elem.position} style={{ zIndex: 1000+idx*3 }}>
+          let currentTime = (new Date()).getMilliseconds().toString();
+          return <Pane name={elem.position + currentTime} style={{ zIndex: 1000+idx*3 }}>
           <Marker key={`marker-${idx}`} position={elem.getPosition()} icon={getIcon(elem.value, acceptedLimit)} >
-            <Pane name={elem.position +"_tooltip"} style={{ zIndex: 1001+idx*3 }}>
+            <Pane name={elem.position + currentTime +"_tooltip"} style={{ zIndex: 1001+idx*3 }}>
                     <Tooltip direction="center" offset={[0, 0]} opacity={1}  permanent={true} className={"tooltip"} ><b>{elem.value+"mm"}</b>   </Tooltip>
             </Pane>
-            <Pane name={elem.position +"_popup"} style={{ zIndex: 5001 }}>
+            <Pane name={elem.position + currentTime +"_popup"} style={{ zIndex: 5001 }}>
               <Popup>
                 <span>{elem.date.toLocaleDateString()}</span>
               </Popup>
@@ -266,7 +284,7 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
       )}
 
 
-      <InnerObj mapRef={props.mapRef}/>
+      <InnerObj mapRef={props.mapRef} zoomChanged={zoomChanged}/>
 
     </MapContainer>
 
