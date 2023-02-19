@@ -61,7 +61,7 @@ function getIcon(value: number, acceptedLimit:number) {
   //#1715ff
   
   if (value > acceptedLimit) {
-    iconSvg = iconSvg.replace("ICONCOLOR","#1515ff");
+    iconSvg = iconSvg.replace("ICONCOLOR","#aa1515");//#1515ff
   }
   else {
     iconSvg = iconSvg.replace("ICONCOLOR", "#15aa15");
@@ -143,8 +143,7 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
 
     STATIONS.forEach(station => {
 
-      
-      fetch("https://opendata.fmi.fi/wfs?service=WFS&version=2.0.0&request=getFeature&storedquery_id=fmi::observations::weather::daily::simple&place="+station+"&starttime="+startDateString+"&endtime="+endDateString+"&")
+      fetch("https://opendata.fmi.fi/wfs?service=WFS&version=2.0.0&request=getFeature&storedquery_id=fmi::observations::weather::daily::simple&place="+station+"&starttime="+startDateString+"&endtime="+endDateString)
       .then((response) => {
         response.text().then(responseText => {
         const parser = new DOMParser();
@@ -201,8 +200,11 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
             if (rainValues.some(e => e.lat == val.lat && e.lon == val.lon)) {
             }
             else {
-              setMarkers(markers =>[...markers, val]);
-              rainValues.push(val)
+              //setMarkers(markers =>[...markers, val]);
+              rainValues.push(val);
+              rainValues.sort((a, b) => (a.date > b.date) ? 1 : -1);
+
+              setMarkers(rainValues);
 
             }
   
@@ -221,32 +223,48 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
 
 }, []);
 
+  const canDisplayMarker = (value:RainValue, ind:number) => {
+
+    let proximitylimit = 0.1//degrees
+    let collides = false;
+    if (ind > 0) {
+      for (let i = 0; i < ind-1; i++ ) {
+        let elem = markers.at(i)!;
+        if (  Math.abs(elem.lon - value.lon) < proximitylimit && Math.abs(elem.lat - value.lat) < proximitylimit) { //
+          collides = true;
+        }
+      }
+  
+    }
+    return !collides;
+  }
+
   return (
-    <MapContainer center={{ lat: 60.17523, lng: 24.94459 }} zoom={3} zoomControl={true} >
+    <MapContainer center={{ lat: 60.17523, lng: 24.94459 }} zoom={3} zoomControl={false} >
       <TileLayer
         attribution='&copy; <a href="http://osm.org/copyright%22%3EOpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       
-      {markers.length != 0 ?
-      
-      markers.map((elem, idx) => 
-        <Pane name={elem.position} style={{ zIndex: 1000+idx*3 }}>
-            <Marker key={`marker-${idx}`} position={elem.getPosition()} icon={getIcon(elem.value, acceptedLimit)} >
-              <Pane name={elem.position +"_tooltip"} style={{ zIndex: 1001+idx*3 }}>
-                      <Tooltip direction="center" offset={[0, 0]} opacity={1}  permanent={true} className={"tooltip"} ><b>{elem.value+"mm"}</b>   </Tooltip>
-              </Pane>
-              <Pane name={elem.position +"_popup"} style={{ zIndex: 5001 }}>
-                <Popup>
-                  <span>{elem.date.toLocaleDateString()}</span>
-                </Popup>
-              </Pane>
-          </Marker>
-        </Pane>
-      )
-    : null}
+      {markers.map((elem, idx) => 
 
-<button className="test">Test</button>
+        {if (canDisplayMarker(elem, idx)) {
+          return <Pane name={elem.position} style={{ zIndex: 1000+idx*3 }}>
+          <Marker key={`marker-${idx}`} position={elem.getPosition()} icon={getIcon(elem.value, acceptedLimit)} >
+            <Pane name={elem.position +"_tooltip"} style={{ zIndex: 1001+idx*3 }}>
+                    <Tooltip direction="center" offset={[0, 0]} opacity={1}  permanent={true} className={"tooltip"} ><b>{elem.value+"mm"}</b>   </Tooltip>
+            </Pane>
+            <Pane name={elem.position +"_popup"} style={{ zIndex: 5001 }}>
+              <Popup>
+                <span>{elem.date.toLocaleDateString()}</span>
+              </Popup>
+            </Pane>
+        </Marker>
+      </Pane>
+
+        }}
+      )}
+
 
       <InnerObj mapRef={props.mapRef}/>
 
