@@ -233,11 +233,12 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
 
     let collides = false;
     if (ind > 0) {
-      for (let i = 0; i < ind-1; i++ ) {
+      for (let i = 0; i < ind; i++ ) {
         let elem = markers.at(i)!;
         if (  Math.abs(elem.lon - value.lon) < proximityLimit && Math.abs(elem.lat - value.lat) < proximityLimit) { //
           collides = true;
         }
+
       }
   
     }
@@ -247,12 +248,23 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
 
 
   const zoomChanged = (zoomLevel:number) => {
+    let scaleMap:Map<number, number> = new Map<number, number>([
+      [0, 40],
+      [1, 25],
+      [2, 6],
+      [3, 5],
+      [4, 1.9],
+      [5, 1],
+      [6, 0.5],
+      [7, 0.2],
+      [8, 0.1]
+    ]);
 
-    let proxLimit = 20 / zoomLevel -1;
-    if (proxLimit < 0) {
-      proxLimit = 0;
+    let proxLimit = 0;
+
+    if (scaleMap.has(zoomLevel)) {
+      proxLimit = scaleMap.get(zoomLevel)!;
     }
-    console.log(proxLimit);
     setProximityLimit(proxLimit)
   }
 
@@ -269,7 +281,7 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
           let currentTime = (new Date()).getMilliseconds().toString();
           return <Pane name={elem.position + currentTime} style={{ zIndex: 1000+idx*3 }}>
           <Marker key={`marker-${idx}`} position={elem.getPosition()} icon={getIcon(elem.value, acceptedLimit)} >
-            <Pane name={elem.position + currentTime +"_tooltip"} style={{ zIndex: 1001+idx*3 }}>
+            <Pane name={elem.position + currentTime +"_tooltip"} style={{ zIndex: 1001+idx*100 }}>
                     <Tooltip direction="center" offset={[0, 0]} opacity={1}  permanent={true} className={"tooltip"} ><b>{elem.value+"mm"}</b>   </Tooltip>
             </Pane>
             <Pane name={elem.position + currentTime +"_popup"} style={{ zIndex: 5001 }}>
