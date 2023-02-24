@@ -8,7 +8,16 @@ import { LatLng } from 'leaflet';
 import iconUrl from "./marker.svg";//"./marker.svg";
 
 import InnerObj from "./innerobj"
+import STATIONS from "./Constants"
 
+//TODO:
+/**
+ * - tee haku kahdessa osassa 0-98 ja loput
+ * - ennen toisen osan lisäämistä pitää sortata kaikki
+ * - välimatkan filtteröinti saa ottaa huomioon vain ne, jotka on näkyvissä, nyt käydään läpi kaikki
+ * 
+ * 
+ */
 
 class RainValue {
   position: string;
@@ -136,6 +145,7 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
     const startDateString = startDate.toISOString();
     const endDateString = currentDate.toISOString();
 
+    /*
     let STATIONS = ["hervanta", "lahti", "helsinki", "pirttikoski", "sulkavankylä", "Simanala", "Kaaresuvanto", "Mustikkamäki",
                     "Purola", "Palokki", "Kumpula", "Sallila", "Kontiojärvi", "Inari", "Kärjenkoski", "Huhtilampi",
                     "Pyhäselkä", "Pärnämäki", "Hyytiälä", "Muuratjärvi", "Paltaniemi", "Mehtäkylä", "Pitkäsenkylä",
@@ -149,11 +159,12 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
                     "Savukoski", "Kestilä", "Sjundby","Näljänkä", "Pesiö", "Iisvesi", "Inkee", "Kauppilankylä",
                      "Särkijärvi", "Itätulli",  "Kaarakkala", "Hiiskula", "Koivuniemi", "Vähäkangas", "Kalaniemi",
                   ];
-
+    */
     //STATIONS = ["hervanta"];
 
-    STATIONS.forEach(station => {
+    //STATIONS.forEach(station => {
 
+      /*
       fetch("https://opendata.fmi.fi/wfs?service=WFS&version=2.0.0&request=getFeature&storedquery_id=fmi::observations::weather::daily::simple&place="+station+"&starttime="+startDateString+"&endtime="+endDateString)
       .then((response) => {
         response.text().then(responseText => {
@@ -220,11 +231,79 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
         
         });
 
+      });*/
+
+
+      //let url = "https://opendata.fmi.fi/wfs?service=WFS&version=2.0.0&request=getFeature&storedquery_id=fmi::observations::weather::daily::simple&fmisid=874863&fmisid=852678&starttime="+startDateString+"&endtime="+endDateString;
+      //base url
+      let url = "https://opendata.fmi.fi/wfs?service=WFS&version=2.0.0&request=getFeature&storedquery_id=fmi::observations::weather::daily::simple";
+      //adding all required weather stations, api supports multiple of fmisid parameters for some reason
+      let subStations = STATIONS.slice(99, 180)
+      subStations.forEach(station => {
+        url += "&fmisid=" + station;
       });
-      
+      //finally setting date limits for data
+      url += "&starttime="+startDateString+"&endtime="+endDateString;
+
+      console.log(url)
+
+      fetch(url).then(response => {
+        response.text().then(responseText => {
+
+          let rainValueMap:Map<String, RainValue> = new Map();
+
+          const parser = new DOMParser();
+          const xml = parser.parseFromString(responseText, 'text/xml');
+          const elems = xml.getElementsByTagName('BsWfs:BsWfsElement')
+
+          let position = "";
+          let latestRainValue = new RainValue("",0,0,new Date,0);
+          for (let i = 0; i < elems.length; i++) {
+            let item = elems[i];
+            let type = item.getElementsByTagName('BsWfs:ParameterName')[0].textContent;
+            if (type === "rrday") {
+
+              let valueStr = item.getElementsByTagName('BsWfs:ParameterValue')[0].textContent!;
+              if (valueStr != "NaN") {
+                let digitValue = parseFloat(valueStr);
+                if (digitValue >= 0) {
+                  let dateString = item.getElementsByTagName('BsWfs:Time')[0].textContent!;
+                  let date = new Date(Date.parse(dateString));
+                  let position =  item.getElementsByTagName('gml:pos')[0].textContent!.trim();
+
+                  let lat = parseFloat(position.split(" ")[0])
+                  let lon = parseFloat(position.split(" ")[1])
+                  let value = parseFloat(valueStr);
+
+                  let valueObj = new RainValue(position, lat, lon, date, value);
+
+                  if (rainValueMap.has(position)) {
+                    if (rainValueMap.get(position)!.date < valueObj.date) {
+                      rainValueMap.set(position, valueObj);
+                    }
+                  }
+                  else {
+                    rainValueMap.set(position, valueObj);
+                  }
+
+                }  
+              }
+
+
+            }
+            
+          }  
+
+
+          let values = Array.from(rainValueMap.values());
+          console.log(values)
+          setMarkers(markers =>[...values] )
+        });
+  
+      });
       initialized = true;
 
-    });
+    //});
 
 
 }, []);
@@ -250,15 +329,17 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
   const zoomChanged = (zoomLevel:number) => {
     let scaleMap:Map<number, number> = new Map<number, number>([
       [0, 40],
-      [1, 25],
+      [1, 10],
       [2, 6],
       [3, 5],
-      [4, 1.9],
+      [4, 1.5],//1.9
       [5, 1],
       [6, 0.5],
       [7, 0.2],
       [8, 0.1]
     ]);
+
+    console.log(zoomLevel)
 
     let proxLimit = 0;
 
