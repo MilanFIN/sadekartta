@@ -234,71 +234,74 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
       });*/
 
 
-      //let url = "https://opendata.fmi.fi/wfs?service=WFS&version=2.0.0&request=getFeature&storedquery_id=fmi::observations::weather::daily::simple&fmisid=874863&fmisid=852678&starttime="+startDateString+"&endtime="+endDateString;
-      //base url
-      let url = "https://opendata.fmi.fi/wfs?service=WFS&version=2.0.0&request=getFeature&storedquery_id=fmi::observations::weather::daily::simple";
-      //adding all required weather stations, api supports multiple of fmisid parameters for some reason
-      let subStations = STATIONS.slice(99, 180)
-      subStations.forEach(station => {
-        url += "&fmisid=" + station;
-      });
-      //finally setting date limits for data
-      url += "&starttime="+startDateString+"&endtime="+endDateString;
 
-      console.log(url)
+      let stationBatches = [STATIONS.slice(95), STATIONS.slice(95)]; //
 
-      fetch(url).then(response => {
-        response.text().then(responseText => {
+      stationBatches.forEach(subStations => {
+        let url = "https://opendata.fmi.fi/wfs?service=WFS&version=2.0.0&request=getFeature&storedquery_id=fmi::observations::weather::daily::simple";
 
-          let rainValueMap:Map<String, RainValue> = new Map();
-
-          const parser = new DOMParser();
-          const xml = parser.parseFromString(responseText, 'text/xml');
-          const elems = xml.getElementsByTagName('BsWfs:BsWfsElement')
-
-          let position = "";
-          let latestRainValue = new RainValue("",0,0,new Date,0);
-          for (let i = 0; i < elems.length; i++) {
-            let item = elems[i];
-            let type = item.getElementsByTagName('BsWfs:ParameterName')[0].textContent;
-            if (type === "rrday") {
-
-              let valueStr = item.getElementsByTagName('BsWfs:ParameterValue')[0].textContent!;
-              if (valueStr != "NaN") {
-                let digitValue = parseFloat(valueStr);
-                if (digitValue >= 0) {
-                  let dateString = item.getElementsByTagName('BsWfs:Time')[0].textContent!;
-                  let date = new Date(Date.parse(dateString));
-                  let position =  item.getElementsByTagName('gml:pos')[0].textContent!.trim();
-
-                  let lat = parseFloat(position.split(" ")[0])
-                  let lon = parseFloat(position.split(" ")[1])
-                  let value = parseFloat(valueStr);
-
-                  let valueObj = new RainValue(position, lat, lon, date, value);
-
-                  if (rainValueMap.has(position)) {
-                    if (rainValueMap.get(position)!.date < valueObj.date) {
+        subStations.forEach(station => {
+          url += "&fmisid=" + station;
+        });
+        //finally setting date limits for data
+        url += "&starttime="+startDateString+"&endtime="+endDateString;
+  
+        console.log(url)
+  
+        fetch(url).then(response => {
+          response.text().then(responseText => {
+  
+            let rainValueMap:Map<String, RainValue> = new Map();
+  
+            const parser = new DOMParser();
+            const xml = parser.parseFromString(responseText, 'text/xml');
+            const elems = xml.getElementsByTagName('BsWfs:BsWfsElement')
+  
+            let position = "";
+            let latestRainValue = new RainValue("",0,0,new Date,0);
+            for (let i = 0; i < elems.length; i++) {
+              let item = elems[i];
+              let type = item.getElementsByTagName('BsWfs:ParameterName')[0].textContent;
+              if (type === "rrday") {
+  
+                let valueStr = item.getElementsByTagName('BsWfs:ParameterValue')[0].textContent!;
+                if (valueStr != "NaN") {
+                  let digitValue = parseFloat(valueStr);
+                  if (digitValue >= 0) {
+                    let dateString = item.getElementsByTagName('BsWfs:Time')[0].textContent!;
+                    let date = new Date(Date.parse(dateString));
+                    let position =  item.getElementsByTagName('gml:pos')[0].textContent!.trim();
+  
+                    let lat = parseFloat(position.split(" ")[0])
+                    let lon = parseFloat(position.split(" ")[1])
+                    let value = parseFloat(valueStr);
+  
+                    let valueObj = new RainValue(position, lat, lon, date, value);
+  
+                    if (rainValueMap.has(position)) {
+                      if (rainValueMap.get(position)!.date < valueObj.date) {
+                        rainValueMap.set(position, valueObj);
+                      }
+                    }
+                    else {
                       rainValueMap.set(position, valueObj);
                     }
-                  }
-                  else {
-                    rainValueMap.set(position, valueObj);
-                  }
-
-                }  
+  
+                  }  
+                }
+  
+  
               }
+              
+            }  
+  
+  
+            let values = Array.from(rainValueMap.values());
+            let sortedValues = values.concat(markers).sort((a, b) => (a.date > b.date) ? 1 : -1);;
+            setMarkers(markers =>[...sortedValues] )
+          });
+      });
 
-
-            }
-            
-          }  
-
-
-          let values = Array.from(rainValueMap.values());
-          console.log(values)
-          setMarkers(markers =>[...values] )
-        });
   
       });
       initialized = true;
@@ -324,6 +327,28 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
     return !collides;
   }
 
+  const getValidMarkers = () => {
+
+    let validMarkers = Array<RainValue>();
+
+    markers.forEach(marker => {
+      let collides = false;
+      validMarkers.every(validMarker => {
+        if (Math.abs(validMarker.lon - marker.lon) < proximityLimit && Math.abs(validMarker.lat - marker.lat) < proximityLimit) { //
+          collides = true;
+          return false;
+        }
+        return true;
+      });
+      if (!collides) {
+        validMarkers.push(marker);
+      }
+
+    });
+
+    return validMarkers;
+  }
+
 
 
   const zoomChanged = (zoomLevel:number) => {
@@ -339,7 +364,6 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
       [8, 0.1]
     ]);
 
-    console.log(zoomLevel)
 
     let proxLimit = 0;
 
@@ -356,7 +380,28 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       
-      {markers.map((elem, idx) => 
+      {
+        getValidMarkers().map((elem, idx) => 
+
+        {
+          let currentTime = (new Date()).getMilliseconds().toString();
+          return <Pane name={elem.position + currentTime} style={{ zIndex: 1000+idx*3 }}>
+          <Marker key={`marker-${idx}`} position={elem.getPosition()} icon={getIcon(elem.value, acceptedLimit)} >
+            <Pane name={elem.position + currentTime +"_tooltip"} style={{ zIndex: 1001+idx*100 }}>
+                    <Tooltip direction="center" offset={[0, 0]} opacity={1}  permanent={true} className={"tooltip"} ><b>{elem.value+"mm"}</b>   </Tooltip>
+            </Pane>
+            <Pane name={elem.position + currentTime +"_popup"} style={{ zIndex: 5001 }}>
+              <Popup>
+                <span>{elem.date.toLocaleDateString()}</span>
+              </Popup>
+            </Pane>
+        </Marker>
+      </Pane>
+
+        }
+      )
+      /*
+      markers.map((elem, idx) => 
 
         {if (canDisplayMarker(elem, idx)) {
           let currentTime = (new Date()).getMilliseconds().toString();
@@ -374,7 +419,8 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
       </Pane>
 
         }}
-      )}
+      )
+      */}
 
 
       <InnerObj mapRef={props.mapRef} zoomChanged={zoomChanged}/>
