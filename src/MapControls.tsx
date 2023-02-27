@@ -31,7 +31,7 @@ const MapControls = ((props:any) => {
 		<button className={"zoomButton"} onClick={subZoom}>-</button>
 		<button className={"zoomButton"} onClick={addZoom}>+</button>
 
-		<label className="controlLabel">Acceptable rain value: {acceptedLimit}</label>
+		<label className="controlLabel">Sademäärä &lt; {acceptedLimit}</label>
 		<br/>
 		<input type="range" min={0.0} max={3.0}  className="slider" id="acceptedRange" step={0.1}
 		  onChange={changeLimit} value={acceptedLimit}></input>
