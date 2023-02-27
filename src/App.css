@@ -1,3 +1,68 @@
+
+
+
+
+@-moz-keyframes spin {
+  to { -moz-transform: rotate(360deg); }
+}
+@-webkit-keyframes spin {
+  to { -webkit-transform: rotate(360deg); }
+}
+@keyframes spin {
+  to {transform:rotate(360deg);}
+}
+
+.aboutDiv {
+  position:absolute;
+  width:50%;
+  height:50%;
+  top:10%;
+  left:25%;
+  background-color: white;
+  z-index:5000;
+  border: 5px solid #000;
+  border-radius: 25px;
+
+}
+
+.aboutBkg {
+  position:absolute;
+  width:100%;
+  height:100%;
+  top:0%;
+  left:0%;
+  background-color: black;
+  z-index:5000;
+  opacity:0.5;
+
+}
+
+.loadingBkgDiv {
+  background-color: black;
+  opacity: 0.5;
+}
+
+.loadingDiv {
+  position:absolute;
+  z-index:4999;
+  height: 90vh;
+  width: 90%;
+  margin-left: 5%;
+  border: 5px solid #000;
+  border-radius: 25px;
+
+}
+
+.loadingSpinner {
+  animation: spin 1500ms linear infinite;
+  position: absolute;
+  top:50%;
+  left: 50%;
+  z-index: 5000;
+}
+
+
+
 .controlLabel {
   width: 100%; /* Full-width */
   height: 25%; /* Specified height */

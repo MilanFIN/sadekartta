@@ -96,6 +96,8 @@ export type MapComponentHandle = {
 
 type MapComponentProps = {
   mapRef: any;
+  loadingDone: () => void;
+
 };
 
 const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, ref) => {
@@ -299,6 +301,8 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
             let values = Array.from(rainValueMap.values());
             let sortedValues = values.concat(markers).sort((a, b) => (a.date > b.date) ? 1 : -1);;
             setMarkers(markers =>[...sortedValues] )
+
+            props.loadingDone();
           });
       });
 
@@ -311,21 +315,6 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
 
 }, []);
 
-  const canDisplayMarker = (value:RainValue, ind:number) => {
-
-    let collides = false;
-    if (ind > 0) {
-      for (let i = 0; i < ind; i++ ) {
-        let elem = markers.at(i)!;
-        if (  Math.abs(elem.lon - value.lon) < proximityLimit && Math.abs(elem.lat - value.lat) < proximityLimit) { //
-          collides = true;
-        }
-
-      }
-  
-    }
-    return !collides;
-  }
 
   const getValidMarkers = () => {
 
