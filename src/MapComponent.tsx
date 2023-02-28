@@ -105,7 +105,7 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
   let initialObj: RainValue[] | (() => RainValue[]) = [];
   const [markers, setMarkers]  = useState<RainValue[]>(initialObj);
   const [acceptedLimit, setAcceptedLimit]  = useState(0.2);
-  const [proximityLimit, setProximityLimit]  = useState(20 / 3 -1);
+  const [proximityLimit, setProximityLimit]  = useState(1);
 
 
   let initialized = false;
@@ -122,7 +122,7 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
 
   const addAndSortMarkers = (newValue:RainValue) => {
     markers.push(newValue);
-    let newMarkers = markers.sort((a, b) => (a.date > b.date) ? 1 : -1);
+    let newMarkers = markers.sort((a, b) => (a.date < b.date) ? 1 : -1);
 
     setMarkers(markers =>[...newMarkers] )
     //markers.push(newValue);
@@ -319,8 +319,10 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
   const getValidMarkers = () => {
 
     let validMarkers = Array<RainValue>();
+    
+    let sortedMarkers = markers.sort((a, b) => (a.date < b.date) ? 1 : -1);
 
-    markers.forEach(marker => {
+    sortedMarkers.forEach(marker => {
       let collides = false;
       validMarkers.every(validMarker => {
         if (Math.abs(validMarker.lon - marker.lon) < proximityLimit && Math.abs(validMarker.lat - marker.lat) < proximityLimit) { //
@@ -363,7 +365,7 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
   }
 
   return (
-    <MapContainer center={{ lat: 60.17523, lng: 24.94459 }} zoom={3} zoomControl={false} >
+    <MapContainer center={{ lat: 65, lng:27 }} zoom={5} zoomControl={false} >
       <TileLayer
         attribution='&copy; <a href="http://osm.org/copyright%22%3EOpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -374,13 +376,13 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
 
         {
           let currentTime = (new Date()).getMilliseconds().toString();
-          return <Pane name={elem.position + currentTime} style={{ zIndex: 1000+idx*3 }}>
+          return <Pane name={elem.position + currentTime + "_marker"} style={{ zIndex: 1000+idx }}>
           <Marker key={`marker-${idx}`} position={elem.getPosition()} icon={getIcon(elem.value, acceptedLimit)} >
-            <Pane name={elem.position + currentTime +"_tooltip"} style={{ zIndex: 1001+idx*100 }}>
+            <Pane name={elem.position + currentTime +"_tooltip"} style={{ zIndex: 2000+idx }}>
                     <Tooltip direction="center" offset={[0, 0]} opacity={1}  permanent={true} className={"tooltip"} ><b>{elem.value+"mm"}</b>   </Tooltip>
             </Pane>
-            <Pane name={elem.position + currentTime +"_popup"} style={{ zIndex: 5001 }}>
-              <Popup>
+            <Pane name={elem.position + currentTime +"_popup"} style={{ zIndex: 9001 }}>
+              <Popup >
                 <span>{elem.date.toLocaleDateString()}</span>
               </Popup>
             </Pane>
