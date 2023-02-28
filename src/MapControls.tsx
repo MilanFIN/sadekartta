@@ -25,7 +25,8 @@ const MapControls = ((props:any) => {
   
 	
 	return (
-	  <div className={"mapControls"}>
+		<div>
+	  	<div className="mapControls">
 
 		
 		<button className={"zoomButton"} onClick={subZoom}>-</button>
@@ -35,8 +36,13 @@ const MapControls = ((props:any) => {
 		<br/>
 		<input type="range" min={0.0} max={3.0}  className="slider" id="acceptedRange" step={0.1}
 		  onChange={changeLimit} value={acceptedLimit}></input>
-	  </div>
-	
+		</div>
+
+		<div className="mapControlsBkg mapControls">
+
+		</div>
+
+		</div>
 	)
   })
   

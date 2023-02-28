@@ -16,10 +16,20 @@ h2 {
   text-align:center;
 }
 
+.AboutDialog {
+  margin:100px;
+  z-index: 6000;
+}
+
+.AboutContent {
+  overflow-y: scroll;
+  margin:20px;
+}
+
 #closeButton {
   position:absolute;
-  right:25px;
-  top:25px;  
+  right:10px;
+  top:20px;  
   background-color: lightgray;
   border: 1px solid #222;
 }
@@ -99,17 +109,20 @@ h2 {
 .mapControls {
   position: absolute;
   bottom: 10%;
-  left: 10%;
-  display: flex;
-  flex-wrap: wrap;
-  /*
-  width: 13%;
-  height: 20%;
-  */
+  right: 10%;
+  width:15%;
+  height:10%;
+
   border: 3px solid #000;
   z-index: 5000;
+
+}
+
+.mapControlsBkg {
+  z-index: 4999;
   background-color: #000;
   opacity: 0.4;
+
 }
 
 
@@ -147,6 +160,7 @@ h2 {
   box-shadow: none !important;
   color: lightgrey !important;
 }
+
 
 
 .App {
