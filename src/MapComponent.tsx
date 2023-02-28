@@ -37,8 +37,7 @@ class RainValue {
   }
 }
 
-
-const ICONSVG = `<svg
+const CURRENTICON = `<svg
 viewBox="0 0 11 11"
 xmlns="http://www.w3.org/2000/svg"
 >
@@ -56,6 +55,64 @@ xmlns="http://www.w3.org/2000/svg"
     cx="5.5"
     cy="5.5"
     r="5.4000001" />
+
+</g>
+</svg>
+`
+
+
+const EXPIREDICON = `<svg
+viewBox="0 0 11 11"
+xmlns="http://www.w3.org/2000/svg"
+>
+<g
+  id="layer1">
+ <circle
+    style="fill:#000000;fill-opacity:1;stroke-width:0.70785"
+    id="path4253"
+    cx="5.5"
+    cy="5.5"
+    r="5.5" />
+ <circle
+    style="fill:ICONCOLOR;fill-opacity:1;stroke-width:0.316687"
+    id="bluebkg"
+    cx="5.5"
+    cy="5.5"
+    r="5.4000001" />
+    <path
+       sodipodi:type="star"
+       style="fill:#000000;fill-opacity:1;stroke-width:0.264583"
+       id="path1124-3-6"
+       inkscape:flatsided="false"
+       sodipodi:sides="3"
+       sodipodi:cx="9.4936028"
+       sodipodi:cy="1.3936056"
+       sodipodi:r1="1.3862302"
+       sodipodi:r2="0.69311517"
+       sodipodi:arg1="-1.5707963"
+       sodipodi:arg2="-0.52359878"
+       inkscape:rounded="0"
+       inkscape:randomized="0"
+       d="m 9.4936028,0.00737536 0.6002552,1.03967264 0.600255,1.0396727 -1.2005102,1e-7 -1.2005107,-1e-7 0.6002553,-1.0396727 z"
+       inkscape:transform-center-y="-0.49083336"
+       transform="matrix(1.4160641,0,0,1.4163111,-4.4435504,0.2595542)" />
+    <path
+       sodipodi:type="star"
+       style="fill:#ffff00;fill-opacity:1;stroke-width:0.264583"
+       id="path1124-3"
+       inkscape:flatsided="false"
+       sodipodi:sides="3"
+       sodipodi:cx="9.4936028"
+       sodipodi:cy="1.3936056"
+       sodipodi:r1="1.3862302"
+       sodipodi:r2="0.69311517"
+       sodipodi:arg1="-1.5707963"
+       sodipodi:arg2="-0.52359878"
+       inkscape:rounded="0"
+       inkscape:randomized="0"
+       d="m 9.4936028,0.00737536 0.6002552,1.03967264 0.600255,1.0396727 -1.2005102,1e-7 -1.2005107,-1e-7 0.6002553,-1.0396727 z"
+       inkscape:transform-center-y="-0.43300001"
+       transform="matrix(1.2494317,0,0,1.2494317,-2.8616526,0.49078499)" />
 </g>
 </svg>
 
@@ -64,12 +121,19 @@ xmlns="http://www.w3.org/2000/svg"
 
 
 
-function getIcon(value: number, acceptedLimit:number) {
+function getIcon(marker: RainValue, acceptedLimit:number) {
 
-  let iconSvg = ICONSVG;
-  //#1715ff
+  const currentDate = new Date();
+  let iconSvg = CURRENTICON;
+
+  let overDayAgo = new Date();
+  overDayAgo.setDate(currentDate.getDate() - 2);
+
+  if (overDayAgo > marker.date) {
+    iconSvg = EXPIREDICON;
+  }
   
-  if (value > acceptedLimit) {
+  if (marker.value > acceptedLimit) {
     iconSvg = iconSvg.replace("ICONCOLOR","#aa1515");//#1515ff
   }
   else {
@@ -130,6 +194,20 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
 
   }
 
+  const getMarkerPopupMessage = (marker:RainValue) => {
+    let message = marker.position + "\n";
+    message += marker.date.toLocaleDateString("en-GB").replaceAll("/", ".");
+
+    const currentDate = new Date();
+  
+    let overDayAgo = new Date();
+    overDayAgo.setDate(currentDate.getDate() - 2);
+  
+    if (overDayAgo > marker.date) {
+      message += "\nHUOM: yli päivän vanha havainto!"
+    }
+    return message;
+  }
   useEffect(() => {
 
     if (initialized) {
@@ -146,96 +224,6 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
    
     const startDateString = startDate.toISOString();
     const endDateString = currentDate.toISOString();
-
-    /*
-    let STATIONS = ["hervanta", "lahti", "helsinki", "pirttikoski", "sulkavankylä", "Simanala", "Kaaresuvanto", "Mustikkamäki",
-                    "Purola", "Palokki", "Kumpula", "Sallila", "Kontiojärvi", "Inari", "Kärjenkoski", "Huhtilampi",
-                    "Pyhäselkä", "Pärnämäki", "Hyytiälä", "Muuratjärvi", "Paltaniemi", "Mehtäkylä", "Pitkäsenkylä",
-                    
-                    "Kangasniemi", "Tastula", "Pulju", "Korpijoki", "Rausenkulma", "Kattilamaa", "Utti",
-
-                    "Voikoski", "Apaja", "Karttula", "Hirvijärvi", "Pyörni", "Teeriranta", "Lamminkäyrä", "Leppäkorpi",
-                    "Tuorila", "Pitkäaho", "Pirttiperä", "Riimala", "Tottijärvi", "Mujejärvi", "Ylimarkku", "Teinikivi", "Viuruniemi", 
-                    "Utö", "Pelkosenniemi", "Raistakka", "Jaurakkajärvi", "Sarakylä", "Kotila", "Hiidenniemi", "Yläne",
-                    "Ylä-Luosta", "Mustavaara", "Kotaniemi",  "Värriötunturi", "Laukansaari", "Savonranta", "Kelloselkä",
-                    "Savukoski", "Kestilä", "Sjundby","Näljänkä", "Pesiö", "Iisvesi", "Inkee", "Kauppilankylä",
-                     "Särkijärvi", "Itätulli",  "Kaarakkala", "Hiiskula", "Koivuniemi", "Vähäkangas", "Kalaniemi",
-                  ];
-    */
-    //STATIONS = ["hervanta"];
-
-    //STATIONS.forEach(station => {
-
-      /*
-      fetch("https://opendata.fmi.fi/wfs?service=WFS&version=2.0.0&request=getFeature&storedquery_id=fmi::observations::weather::daily::simple&place="+station+"&starttime="+startDateString+"&endtime="+endDateString)
-      .then((response) => {
-        response.text().then(responseText => {
-        const parser = new DOMParser();
-        const xml = parser.parseFromString(responseText, 'text/xml');
-        const elems = xml.getElementsByTagName('BsWfs:BsWfsElement')
-
-        let position = "";
-        let latestRainValue = new RainValue("",0,0,new Date,0);
-  
-
-        let latestDate = new Date();
-        latestDate.setDate(latestDate.getDate() - 100);
-
-        for (let i = 0; i < elems.length; i++) {
-          let item = elems[i];
-          let type = item.getElementsByTagName('BsWfs:ParameterName')[0].textContent;
-          if (type === "rrday") {
-            let valueStr = item.getElementsByTagName('BsWfs:ParameterValue')[0].textContent;
-            if (valueStr !== "NaN" && valueStr !== null) {
-              let digitValue = parseFloat(valueStr);
-              if (digitValue >= 0) {
-                let dateString = item.getElementsByTagName('BsWfs:Time')[0].textContent;
-                if (dateString !== null) {
-                  let date = new Date(Date.parse(dateString));
-                  let pos =  item.getElementsByTagName('gml:pos')[0].textContent;
-                  if (position !== null) {
-                    position = pos!.trim();
-                    let lat = parseFloat(position.split(" ")[0])
-                    let lon = parseFloat(position.split(" ")[1])
-                    let value = parseFloat(valueStr);
-
-                    let valueObj = new RainValue(position, lat, lon, date, value);
-
-                    if (date > latestDate) {
-                      latestDate = date;
-                      latestRainValue = valueObj;
-                    }
-                    
-                  }
-                  
-                }
-  
-              }
-            }
-          }
-          
-        }
-  
-
-        let val = latestRainValue;
-
-        if (position !== "") {
-          
-            if (markers.some(e => e.lat == val.lat && e.lon == val.lon)) {
-            }
-            else {
-              addAndSortMarkers(val)
-            }
-  
-        }
-
-        
-        
-        });
-
-      });*/
-
-
 
       let stationBatches = [STATIONS.slice(95), STATIONS.slice(95)]; //
 
@@ -348,7 +336,7 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
       [1, 10],
       [2, 6],
       [3, 5],
-      [4, 1.5],//1.9
+      [4, 1.9],//1.9
       [5, 1],
       [6, 0.5],
       [7, 0.2],
@@ -377,13 +365,13 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
         {
           let currentTime = (new Date()).getMilliseconds().toString();
           return <Pane name={elem.position + currentTime + "_marker"} style={{ zIndex: 1000+idx }}>
-          <Marker key={`marker-${idx}`} position={elem.getPosition()} icon={getIcon(elem.value, acceptedLimit)} >
+          <Marker key={`marker-${idx}`} position={elem.getPosition()} icon={getIcon(elem, acceptedLimit)} >
             <Pane name={elem.position + currentTime +"_tooltip"} style={{ zIndex: 2000+idx }}>
                     <Tooltip direction="center" offset={[0, 0]} opacity={1}  permanent={true} className={"tooltip"} ><b>{elem.value+"mm"}</b>   </Tooltip>
             </Pane>
             <Pane name={elem.position + currentTime +"_popup"} style={{ zIndex: 9001 }}>
               <Popup >
-                <span>{elem.date.toLocaleDateString()}</span>
+                <div className="markerPopup" dangerouslySetInnerHTML={{ __html: getMarkerPopupMessage(elem).replace(/\n/g,'<br/>') }} />
               </Popup>
             </Pane>
         </Marker>

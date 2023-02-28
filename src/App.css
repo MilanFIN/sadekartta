@@ -16,7 +16,9 @@ h2 {
   text-align:center;
 }
 
-
+.markerPopup {
+  text-align: center;
+}
 
 #closeButton {
   position:absolute;
