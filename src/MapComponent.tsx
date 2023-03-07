@@ -184,19 +184,11 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
   })
   );
 
-  const addAndSortMarkers = (newValue:RainValue) => {
-    markers.push(newValue);
-    let newMarkers = markers.sort((a, b) => (a.date < b.date) ? 1 : -1);
 
-    setMarkers(markers =>[...newMarkers] )
-    //markers.push(newValue);
-    //setMarkers(markers);
-
-  }
 
   const getMarkerPopupMessage = (marker:RainValue) => {
-    let message = marker.position + "\n";
-    message += marker.date.toLocaleDateString("en-GB").replaceAll("/", ".");
+    let message = "Sijainti: " + marker.position + "\n";
+    message += "Pvm: <b>"+ marker.date.toLocaleDateString("en-GB").replaceAll("/", ".") + "</b>";
 
     const currentDate = new Date();
   
@@ -287,8 +279,8 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
   
   
             let values = Array.from(rainValueMap.values());
-            let sortedValues = values.concat(markers).sort((a, b) => (a.date > b.date) ? 1 : -1);;
-            setMarkers(markers =>[...sortedValues] )
+            let sortedValues = values.concat(markers).sort((a, b) => (a.date < b.date) ? 1 : -1);
+            setMarkers([...sortedValues] )//markers =>
 
             props.loadingDone();
           });
@@ -308,7 +300,7 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
 
     let validMarkers = Array<RainValue>();
     
-    let sortedMarkers = markers.sort((a, b) => (a.date < b.date) ? 1 : -1);
+    let sortedMarkers = markers;//markers.sort((a, b) => (a.date < b.date) ? 1 : -1);
 
     sortedMarkers.forEach(marker => {
       let collides = false;

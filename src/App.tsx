@@ -34,7 +34,7 @@ function App() {
         integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI="
         />
 
-    <Button onClick={() => setShowAbout(true)}>Mikä tämä on?</Button>
+        <Button id="aboutButton" onClick={() => setShowAbout(true)}>Mikä tämä on?</Button>
 
         <div>
         <MapControls mapRef={mapRef} updateAcceptedRainValue={(value:number) => {

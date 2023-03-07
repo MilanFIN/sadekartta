@@ -26,6 +26,11 @@ h2 {
   top:20px;  
   background-color: lightgray;
   border: 1px solid #222;
+  color:black;
+}
+
+#aboutButton {
+  color:white;
 }
 
 .aboutDiv {
