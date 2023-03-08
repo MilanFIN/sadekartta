@@ -176,7 +176,8 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
 
   const getMarkerPopupMessage = (marker:RainValue) => {
     let message = "Sijainti: " + marker.position + "\n";
-    message += "Pvm: <b>"+ marker.date.toLocaleDateString("en-GB").replaceAll("/", ".") + "</b>";
+    message += "Pvm: <b>"+ marker.date.toLocaleDateString("en-GB").replaceAll("/", ".") + "</b>\n";
+    message += "Sade: <b>" + marker.value + "mm";
 
     const currentDate = new Date();
   

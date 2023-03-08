@@ -16,6 +16,7 @@ export default function InnerObj(props:any) {
     
     const mapEvents = useMapEvents({
         zoomend: () => {
+            map.closePopup();
 			props.zoomChanged(mapEvents.getZoom())
             setZoomLevel(mapEvents.getZoom());
         },

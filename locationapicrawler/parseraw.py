@@ -73,7 +73,7 @@ for word in validWords:
 			break
 
 
-	if (position != "" and position not in validPositions):
+	if (position != ""):
 		parameterNames = []
 		parameterValues = []
 		validValues = []
@@ -97,7 +97,7 @@ for word in validWords:
 				the_file.write('"' + word + '",\n')# + ", " + position + "\n")
 
 
-	print(str(iteration) + " / " + str(len(validWords)) + ", valid: " + str(len(validPositions)))
+	print(str(iteration+1) + " / " + str(len(validWords)) + ", valid: " + str(len(validPositions)))
 
 	iteration += 1
 	time.sleep(1)

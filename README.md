@@ -1,3 +1,3 @@
 # Sadekartta
 
-React webapp, jonka avulla voi visualisoida edeltävän vuorokauden sademääriä eri puolella Suomea
+A react webapp for visualizing recent rainfall metrics around Finland.
