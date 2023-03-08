@@ -1,10 +1,10 @@
 
 
 
-import { MapContainer, TileLayer, useMap, Marker, Popup, Tooltip, Pane, useMapEvents} from 'react-leaflet'
+import { useMap, useMapEvents} from 'react-leaflet'
 
 
-import React, { useRef, useEffect, useState } from "react";
+import React, { useState } from "react";
 
 //simple component to route usemap calls via a child of the component hosting leaflet map
 export default function InnerObj(props:any) {

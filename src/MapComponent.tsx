@@ -1,23 +1,11 @@
-import { MapContainer, TileLayer, useMap, Marker, Popup, Tooltip, Pane} from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Popup, Tooltip, Pane} from 'react-leaflet'
 
 import 'leaflet/dist/leaflet.css';
-import React, { useRef, useEffect, useState, useImperativeHandle, forwardRef } from "react";
+import React, { useEffect, useState, useImperativeHandle, forwardRef } from "react";
 import Leaflet from 'leaflet'
-import { isNull } from 'util';
-import { LatLng } from 'leaflet';
-import iconUrl from "./marker.svg";//"./marker.svg";
-
 import InnerObj from "./innerobj"
 import STATIONS from "./Constants"
 
-//TODO:
-/**
- * - tee haku kahdessa osassa 0-98 ja loput
- * - ennen toisen osan lisäämistä pitää sortata kaikki
- * - välimatkan filtteröinti saa ottaa huomioon vain ne, jotka on näkyvissä, nyt käydään läpi kaikki
- * 
- * 
- */
 
 class RainValue {
   position: string;
@@ -317,6 +305,9 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
 
     });
 
+    //must sort to get around zindex not affecting popups and as such popups get hidden behind other markers
+    validMarkers.sort((a, b) => (a.lat < b.lat) ? 1 : -1);
+
     return validMarkers;
   }
 
@@ -371,27 +362,7 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
 
         }
       )
-      /*
-      markers.map((elem, idx) => 
-
-        {if (canDisplayMarker(elem, idx)) {
-          let currentTime = (new Date()).getMilliseconds().toString();
-          return <Pane name={elem.position + currentTime} style={{ zIndex: 1000+idx*3 }}>
-          <Marker key={`marker-${idx}`} position={elem.getPosition()} icon={getIcon(elem.value, acceptedLimit)} >
-            <Pane name={elem.position + currentTime +"_tooltip"} style={{ zIndex: 1001+idx*100 }}>
-                    <Tooltip direction="center" offset={[0, 0]} opacity={1}  permanent={true} className={"tooltip"} ><b>{elem.value+"mm"}</b>   </Tooltip>
-            </Pane>
-            <Pane name={elem.position + currentTime +"_popup"} style={{ zIndex: 5001 }}>
-              <Popup>
-                <span>{elem.date.toLocaleDateString()}</span>
-              </Popup>
-            </Pane>
-        </Marker>
-      </Pane>
-
-        }}
-      )
-      */}
+}
 
 
       <InnerObj mapRef={props.mapRef} zoomChanged={zoomChanged}/>

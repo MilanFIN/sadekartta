@@ -1,10 +1,9 @@
-import React, {useEffect, useRef, useState} from 'react';
-import logo from './logo.svg';
+import React, {useRef, useState} from 'react';
 import './App.css';
 
 import MapComponent, { MapComponentHandle } from "./MapComponent";
 import MapControls from "./MapControls";
-import About, {AboutProps} from "./About";
+import About from "./About";
 
 
 import  Loop  from "@mui/icons-material/Loop";
