@@ -1,7 +1,7 @@
 import { MapContainer, TileLayer, Marker, Popup, Tooltip, Pane} from 'react-leaflet'
 
 import 'leaflet/dist/leaflet.css';
-import React, { useEffect, useState, useImperativeHandle, forwardRef } from "react";
+import React, { useEffect, useState, useImperativeHandle, forwardRef, Ref } from "react";
 import Leaflet from 'leaflet'
 import InnerObj from "./innerobj"
 import STATIONS from "./Constants"
@@ -152,7 +152,7 @@ export type MapComponentHandle = {
 };
 
 type MapComponentProps = {
-  mapRef: any;
+  mapRef: React.RefObject<MapComponentHandle>;
   loadingDone: () => void;
 
 };
@@ -163,9 +163,9 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
   const [markers, setMarkers]  = useState<RainValue[]>(initialObj);
   const [acceptedLimit, setAcceptedLimit]  = useState(0.2);
   const [proximityLimit, setProximityLimit]  = useState(1);
+  const [initialized, setInitialized] = useState(false);
 
 
-  let initialized = false;
 
 
 
@@ -201,6 +201,7 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
     }
 
 
+
     let rainValues :Array<RainValue> = [];
 
     let currentDate = new Date();
@@ -222,7 +223,6 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
         //finally setting date limits for data
         url += "&starttime="+startDateString+"&endtime="+endDateString;
   
-        console.log(url)
   
         fetch(url).then(response => {
           response.text().then(responseText => {
@@ -282,7 +282,7 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
 
   
       });
-      initialized = true;
+      setInitialized(true);
 
     //});
 
@@ -353,8 +353,8 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
 
         {
           let currentTime = (new Date()).getMilliseconds().toString();
-          return <Pane name={elem.position + currentTime + "_marker"} style={{ zIndex: 1000+idx }}>
-          <Marker key={`marker-${idx}`} position={elem.getPosition()} icon={getIcon(elem, acceptedLimit)} >
+          return <Pane key={`marker-${elem.position}`} name={elem.position + currentTime + "_marker"} style={{ zIndex: 1000+idx }}>
+          <Marker  position={elem.getPosition()} icon={getIcon(elem, acceptedLimit)} >
             <Pane name={elem.position + currentTime +"_tooltip"} style={{ zIndex: 2000+idx }}>
                     <Tooltip direction="center" offset={[0, 0]} opacity={1}  permanent={true} className={"tooltip"} ><b>{elem.value+"mm"}</b>   </Tooltip>
             </Pane>

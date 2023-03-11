@@ -6,8 +6,14 @@ import { useMap, useMapEvents} from 'react-leaflet'
 
 import React, { useState } from "react";
 
+type InnerObjProps = {
+    mapRef: any;
+    zoomChanged : (zoom:number) => void;
+};
+  
+
 //simple component to route usemap calls via a child of the component hosting leaflet map
-export default function InnerObj(props:any) {
+export default function InnerObj(props:InnerObjProps) {
 	const map = useMap();
 	props.mapRef.current = map;  
 

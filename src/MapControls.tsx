@@ -1,7 +1,12 @@
 import React, {useState} from 'react';
 
 
-const MapControls = ((props:any) => {
+type MapControlProps = {
+    mapRef: any;
+    updateAcceptedRainValue : (value:number) => void;
+};
+
+const MapControls = ((props:MapControlProps) => {
 
 	const  [acceptedLimit, setAcceptedLimit]  = useState<number>(0.2);
   
@@ -17,9 +22,9 @@ const MapControls = ((props:any) => {
 	  let zoom = map.setView(map.getCenter(), map.getZoom()+-1);
 	}) ;
   
-	const changeLimit = (event:any) => {
-	  setAcceptedLimit(event.target.value);
-	  props.updateAcceptedRainValue(event.target.value)
+	const changeLimit = (event:React.ChangeEvent<HTMLInputElement>) => {
+	  setAcceptedLimit(parseFloat(event.target.value));
+	  props.updateAcceptedRainValue(parseFloat(event.target.value));
   
 	}
   

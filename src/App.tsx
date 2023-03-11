@@ -12,7 +12,7 @@ import Button from '@mui/material/Button';
 
 function App() {
 
-  const mapRef = useRef();
+  const mapRef = useRef<MapComponentHandle>(null);
   const mapContainerRef = useRef<MapComponentHandle>(null);
   const [showLoadView, setShowLoadView] = useState(true);
   const [showAbout, setShowAbout] = useState(false);
