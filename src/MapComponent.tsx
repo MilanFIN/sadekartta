@@ -119,14 +119,19 @@ function getIcon(marker: RainValue, acceptedLimit:number) {
 
   if (overDayAgo > marker.date) {
     iconSvg = EXPIREDICON;
-  }
-  
-  if (marker.value > acceptedLimit) {
-    iconSvg = iconSvg.replace("ICONCOLOR","#aa1515");//#1515ff
+    iconSvg = iconSvg.replace("ICONCOLOR","#737373");//#737373
+
   }
   else {
-    iconSvg = iconSvg.replace("ICONCOLOR", "#15aa15");
+    if (marker.value > acceptedLimit) {
+      iconSvg = iconSvg.replace("ICONCOLOR","#aa1515");//#aa1515
+    }
+    else {
+      iconSvg = iconSvg.replace("ICONCOLOR", "#15aa15");//15aa15
+    }
+  
   }
+  
 
   const svgIcon = Leaflet.divIcon({
     html: iconSvg,
