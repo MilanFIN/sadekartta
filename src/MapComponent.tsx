@@ -313,7 +313,6 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
 
     //must sort to get around zindex not affecting popups and as such popups get hidden behind other markers
     validMarkers.sort((a, b) => (a.lat < b.lat) ? 1 : -1);
-
     return validMarkers;
   }
 
@@ -353,7 +352,7 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
 
         {
           let currentTime = (new Date()).getMilliseconds().toString();
-          return <Pane key={`marker-${elem.position}`} name={elem.position + currentTime + "_marker"} style={{ zIndex: 1000+idx }}>
+          return <Pane key={"markerpane_" + idx/*`marker-${elem.position}` + Date.now().toString()*/} name={elem.position + currentTime + "_marker"} style={{ zIndex: 1000+idx }}>
           <Marker  position={elem.getPosition()} icon={getIcon(elem, acceptedLimit)} >
             <Pane name={elem.position + currentTime +"_tooltip"} style={{ zIndex: 2000+idx }}>
                     <Tooltip direction="center" offset={[0, 0]} opacity={1}  permanent={true} className={"tooltip"} ><b>{elem.value+"mm"}</b>   </Tooltip>
