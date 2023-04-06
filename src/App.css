@@ -31,8 +31,14 @@ h2 {
 
 #aboutButton {
   color:white;
+  margin-top:-5px;
 }
 
+#aboutSpan {
+  color:white;
+  display: inline-block;
+  margin-top: 10px;
+}
 .aboutDiv {
   position:absolute;
   height:60%;
@@ -211,3 +217,5 @@ h2 {
     transform: rotate(360deg);
   }
 }
+
+

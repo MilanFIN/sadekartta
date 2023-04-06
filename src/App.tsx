@@ -7,6 +7,7 @@ import About from "./About";
 
 
 import  Loop  from "@mui/icons-material/Loop";
+import InfoIcon from '@mui/icons-material/Info';
 import Button from '@mui/material/Button';
 
 
@@ -33,7 +34,8 @@ function App() {
         integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI="
         />
 
-        <Button id="aboutButton" onClick={() => setShowAbout(true)}>Mikä tämä on?</Button>
+        <span id="aboutSpan">Mikä tämä on? <Button id="aboutButton" onClick={() => setShowAbout(true)}><InfoIcon/></Button></span>
+        
 
         <div>
         <MapControls mapRef={mapRef} updateAcceptedRainValue={(value:number) => {
