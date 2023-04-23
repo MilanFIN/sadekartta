@@ -1,7 +1,5 @@
 
 
-
-
 @-moz-keyframes spin {
   to { -moz-transform: rotate(360deg); }
 }
@@ -18,16 +16,10 @@ h2 {
 
 .markerPopup {
   text-align: center;
+  z-index: 15000;
+
 }
 
-#closeButton {
-  position:absolute;
-  right:20px;
-  top:20px;  
-  background-color: lightgray;
-  border: 1px solid #222;
-  color:black;
-}
 
 #aboutButton {
   color:white;
@@ -39,30 +31,10 @@ h2 {
   display: inline-block;
   margin-top: 10px;
 }
-.aboutDiv {
-  position:absolute;
-  height:60%;
-  top:10%;
-  left:10%;
-  right:10%;
-  background-color: white;
-  z-index:6000;
-  border-radius: 25px;
-  text-align:start;
-  padding:20px;
 
-}
 
-.aboutBkg {
-  position:absolute;
-  width:100%;
-  height:100%;
-  top:0%;
-  left:0%;
-  background-color: black;
-  z-index:6000;
-  opacity:0.5;
-}
+
+
 
 .aboutContent {
   height:80%;
@@ -139,12 +111,61 @@ h2 {
 
 
 #container {
-  height: 85vh;
+  /*
   width: 92%;
+
+  height: 85vh;
   margin-top: 2vh;
   margin-left: 3%;
   border: 5px solid #000;
   border-radius: 25px;
+  */
+}
+.leaflet-marker-icon,
+.leaflet-marker-shadow {
+  /*
+  animation-fill-mode: both;
+  animation: fadein 1ms;
+  */
+}
+
+
+.in {
+  /*
+  display:block;
+  opacity: 1;
+  */
+
+  
+  animation-fill-mode: both;
+  animation: fadein 1000ms;
+  
+}
+
+
+.out {
+
+  display:none;
+  /*
+  animation-fill-mode: backwards;
+  animation: fadeout 1000ms;
+
+  opacity: 0;
+  transition: opacity linear 1s ;  
+    */
+}
+
+
+
+@keyframes fadein {
+    from { opacity: 0;  }
+    to   { opacity: 1; }
+}
+
+
+@keyframes fadeout {
+  from { opacity: 1;  }
+  to   { opacity: 0; }
 }
 
 

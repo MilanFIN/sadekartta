@@ -243,27 +243,28 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
                 let valueStr = item.getElementsByTagName('BsWfs:ParameterValue')[0].textContent!;
                 if (valueStr != "NaN") {
                   let digitValue = parseFloat(valueStr);
-                  if (digitValue >= 0) {
-                    let dateString = item.getElementsByTagName('BsWfs:Time')[0].textContent!;
-                    let date = new Date(Date.parse(dateString));
-                    let position =  item.getElementsByTagName('gml:pos')[0].textContent!.trim();
-  
-                    let lat = parseFloat(position.split(" ")[0])
-                    let lon = parseFloat(position.split(" ")[1])
-                    let value = parseFloat(valueStr);
-  
-                    let valueObj = new RainValue(position, lat, lon, date, value);
-  
-                    if (rainValueMap.has(position)) {
-                      if (rainValueMap.get(position)!.date < valueObj.date) {
-                        rainValueMap.set(position, valueObj);
-                      }
-                    }
-                    else {
+                  if (digitValue < 0) {
+                    digitValue = 0.0;
+                  }
+                  let dateString = item.getElementsByTagName('BsWfs:Time')[0].textContent!;
+                  let date = new Date(Date.parse(dateString));
+                  let position =  item.getElementsByTagName('gml:pos')[0].textContent!.trim();
+
+                  let lat = parseFloat(position.split(" ")[0])
+                  let lon = parseFloat(position.split(" ")[1])
+                  let value = digitValue;
+
+                  let valueObj = new RainValue(position, lat, lon, date, value);
+
+                  if (rainValueMap.has(position)) {
+                    if (rainValueMap.get(position)!.date < valueObj.date) {
                       rainValueMap.set(position, valueObj);
                     }
-  
-                  }  
+                  }
+                  else {
+                    rainValueMap.set(position, valueObj);
+                  }
+
                 }
   
   
@@ -352,7 +353,12 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
 
         {
           let currentTime = (new Date()).getMilliseconds().toString();
-          return <Pane key={"markerpane_" + idx/*`marker-${elem.position}` + Date.now().toString()*/} name={elem.position + currentTime + "_marker"} style={{ zIndex: 1000+idx }}>
+          return (
+          
+          <Pane 
+                  key={"markerpane_" + idx/*`marker-${elem.position}` + Date.now().toString()*/}
+                   name={elem.position + currentTime + "_marker"} 
+                   style={{ zIndex: 1000+idx }}>
           <Marker  position={elem.getPosition()} icon={getIcon(elem, acceptedLimit)} >
             <Pane name={elem.position + currentTime +"_tooltip"} style={{ zIndex: 2000+idx }}>
                     <Tooltip direction="center" offset={[0, 0]} opacity={1}  permanent={true} className={"tooltip"} ><b>{elem.value+"mm"}</b>   </Tooltip>
@@ -364,6 +370,7 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
             </Pane>
         </Marker>
       </Pane>
+          )
 
         }
       )

@@ -43,23 +43,19 @@ function App() {
                                       }}
           />
   
-        {showLoadView ? 
-          <div>
-          <div className="loadingBkgDiv loadingDiv" >
-  
+          <div className={`absolute w-full h-full top-0 bottom-0 bg-black	z-6000 transition-all duration-500 ${showLoadView ? "opacity-50 visible" : "opacity-0 invisible"}`} >
+
           </div>
-          <div className="loadingDiv"> 
-            <Loop className="loadingSpinner"/>
+
+            <Loop className={`loadingSpinner  transition-all duration-500 ${showLoadView ? "opacity-100 visible" : "opacity-0 visible"}`}/>
   
-          </div>
+
   
-          </div>
-          : null
+
+
+          <div className={`h-[85vh] w-[94%] mt-[2vh] ml-[3%] border rounded-3xl`}>
   
-        }
-          <div id="container">
-  
-          <MapComponent mapRef={mapRef} ref={mapContainerRef} loadingDone={() => hideLoadView()}/>
+            <MapComponent mapRef={mapRef} ref={mapContainerRef} loadingDone={() => hideLoadView()}/>
   
           </div>
 
@@ -75,3 +71,15 @@ function App() {
 }
 
 export default App;
+
+/*
+          <div className={`loadingDiv transition-all duration-500 ${showLoadView ? "opacity-100 " : "opacity-0 "}`}> 
+            <Loop className="loadingSpinner"/>
+  
+          </div>
+                    <div className={`loadingDiv`}> 
+    
+            </div>
+                      <Loop className={`absolute top-3/5 left-3/6 z-6000 transition-all duration-500 ${showLoadView ? "opacity-100 " : "opacity-0 "}`}/>
+
+*/
