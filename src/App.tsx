@@ -4,7 +4,9 @@ import './App.css';
 import MapComponent, { MapComponentHandle } from "./MapComponent";
 import MapControls from "./MapControls";
 import About from "./About";
+import DropDownMenu from "./DropDownMenu";
 
+import CloseHandler from "./CloseHandler";
 
 import  Loop  from "@mui/icons-material/Loop";
 import InfoIcon from '@mui/icons-material/Info';
@@ -17,9 +19,20 @@ function App() {
   const mapContainerRef = useRef<MapComponentHandle>(null);
   const [showLoadView, setShowLoadView] = useState(true);
   const [showAbout, setShowAbout] = useState(false);
+  const [showDropDown, setShowDropDown] = useState(false);
 
   const hideLoadView = () => {
     setShowLoadView(false);
+  }
+
+  const toggleDropDown = () => {
+    if (!showDropDown) {
+      setShowDropDown(true)
+    }
+  }
+  const hideForeGroundElements = () => {
+    setShowAbout(false);
+    setShowDropDown(false)
   }
   
 
@@ -34,8 +47,6 @@ function App() {
         integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI="
         />
 
-        <span id="aboutSpan">Mikä tämä on? <Button id="aboutButton" onClick={() => setShowAbout(true)}><InfoIcon/></Button></span>
-        
 
         <div>
         <MapControls mapRef={mapRef} updateAcceptedRainValue={(value:number) => {
@@ -53,7 +64,7 @@ function App() {
   
 
 
-          <div className={`h-[85vh] w-[94%] mt-[2vh] ml-[3%] border rounded-3xl`}>
+          <div className={`h-[95vh] w-[94%] mt-[2vh] ml-[3%] border rounded-3xl`/* h-85*/}> 
   
             <MapComponent mapRef={mapRef} ref={mapContainerRef} loadingDone={() => hideLoadView()}/>
   
@@ -62,8 +73,28 @@ function App() {
         </div>
 
 
-            <About open={showAbout}
-      onClose={() => setShowAbout(false)} />
+
+<div className={`${(showDropDown || showAbout) ? "opacity-50 visible" : "opacity-0 invisible"} 
+                          absolute w-full h-full top-0 bottom-0 bg-black	z-6000 transition-all duration-500  `}>
+                  </div>
+          
+
+                  <button className={`absolute w-10 h-10 top-14 right-14 z-6000 text-black bg-white`}
+                  onClick={() => toggleDropDown()}>Test</button>
+
+          <div className={`absolute w-24 h-10 top-14 right-24 z-6000
+                            ${(showDropDown) ? "visible" : "invisible"}`}>
+            <CloseHandler active={showDropDown} onClose={() => hideForeGroundElements()}>
+              <DropDownMenu open={showDropDown} showAbout={() => setShowAbout(true)}/>
+            </CloseHandler>
+          </div>
+
+
+          <CloseHandler active={showAbout} onClose={() => hideForeGroundElements()}>
+
+                  <About open={showAbout}
+            onClose={() => setShowAbout(false)} />
+          </CloseHandler>
 
 
     </div>
@@ -73,6 +104,11 @@ function App() {
 export default App;
 
 /*
+
+
+
+
+open={showDropDown} onClose={() => setShowDropDown(false)}
           <div className={`loadingDiv transition-all duration-500 ${showLoadView ? "opacity-100 " : "opacity-0 "}`}> 
             <Loop className="loadingSpinner"/>
   

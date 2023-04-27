@@ -27,7 +27,7 @@ module.exports = {
         '1/2': '50%',
       },
       height: {
-        '85vh': '85vh',
+        '95vh': '95vh',
       }
     },
   },

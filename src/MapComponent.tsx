@@ -13,12 +13,14 @@ class RainValue {
   lon: number;
   date: Date;
   value: number;
+  valid: boolean;
   constructor(position: string, lat: number, lon:number, date:Date, value:number) {
     this.position = position;
     this.lat = lat;
     this.lon = lon;
     this.date = date;
     this.value = value;
+    this.valid = false;
   }
   getPosition() {
     return {lat: this.lat, lng: this.lon};
@@ -294,6 +296,7 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
   const getValidMarkers = () => {
 
     let validMarkers = Array<RainValue>();
+    let invalidMarkers = Array<RainValue>();
     
     let sortedMarkers = markers;//markers.sort((a, b) => (a.date < b.date) ? 1 : -1);
 
@@ -302,15 +305,20 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
       validMarkers.every(validMarker => {
         if (Math.abs(validMarker.lon - marker.lon) < proximityLimit && Math.abs(validMarker.lat - marker.lat) < proximityLimit) { //
           collides = true;
+          marker.valid = false;
+          //invalidMarkers.push(marker)
           return false;
         }
         return true;
       });
       if (!collides) {
+        marker.valid = true;
         validMarkers.push(marker);
       }
 
     });
+
+    validMarkers = validMarkers.concat(invalidMarkers);
 
     //must sort to get around zindex not affecting popups and as such popups get hidden behind other markers
     validMarkers.sort((a, b) => (a.lat < b.lat) ? 1 : -1);
@@ -320,6 +328,9 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
 
 
   const zoomChanged = (zoomLevel:number) => {
+
+    console.log(zoomChanged)
+
     let scaleMap:Map<number, number> = new Map<number, number>([
       [0, 40],
       [1, 10],
@@ -352,18 +363,23 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
         getValidMarkers().map((elem, idx) => 
 
         {
-          let currentTime = (new Date()).getMilliseconds().toString();
+          let currentTime = 0;//(new Date()).getMilliseconds().toString();
           return (
           
           <Pane 
-                  key={"markerpane_" + idx/*`marker-${elem.position}` + Date.now().toString()*/}
-                   name={elem.position + currentTime + "_marker"} 
-                   style={{ zIndex: 1000+idx }}>
-          <Marker  position={elem.getPosition()} icon={getIcon(elem, acceptedLimit)} >
-            <Pane name={elem.position + currentTime +"_tooltip"} style={{ zIndex: 2000+idx }}>
+                  key={elem.position + currentTime + "_markerpane" + elem.valid/*`marker-${elem.position}` + Date.now().toString()*/}
+                   name={elem.position + currentTime + "_markerpane"} /*elem.position + currentTime + "_marker"*/ 
+                   style={{ zIndex: 1000+idx }}
+                   className={elem.valid ? "fadein" : "fadeout"}>
+
+          <Marker key={elem.position + currentTime + "_markerkey"}  position={elem.getPosition()} icon={getIcon(elem, acceptedLimit)} >
+            <Pane name={elem.position + currentTime +"_tooltip"}
+            /*elem.position + currentTime +"_tooltip"*/
+                 style={{ zIndex: 2000+idx }}>
                     <Tooltip direction="center" offset={[0, 0]} opacity={1}  permanent={true} className={"tooltip"} ><b>{elem.value+"mm"}</b>   </Tooltip>
             </Pane>
-            <Pane name={elem.position + currentTime +"_popup"} style={{ zIndex: 9001 }}>
+            <Pane name={elem.position + currentTime +"_popup"} /*elem.position + currentTime +"_popup"*/
+                 style={{ zIndex: 9001 }}>
               <Popup >
                 <div className="markerPopup" dangerouslySetInnerHTML={{ __html: getMarkerPopupMessage(elem).replace(/\n/g,'<br/>') }} />
               </Popup>
