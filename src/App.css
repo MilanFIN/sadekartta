@@ -81,23 +81,9 @@ h2 {
   outline: none; /* Remove outline */
 }
 
-.zoomButton {
-  opacity: 1;
-  width: 50%;
-  height: 50%;
-  background-color: #000;
-  color: white;
-  font-size:xx-large;
-}
-.mapControls {
-  position: absolute;
-  bottom: 50px;
-  right: 50px;
-  width:150px;
-  height:120px;
 
-  border: 3px solid #000;
-  z-index: 5000;
+
+.layerControls {
 
 }
 

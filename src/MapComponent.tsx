@@ -27,6 +27,7 @@ class RainValue {
   }
 }
 
+
 const CURRENTICON = `<svg
 viewBox="0 0 11 11"
 xmlns="http://www.w3.org/2000/svg"
@@ -49,6 +50,7 @@ xmlns="http://www.w3.org/2000/svg"
 </g>
 </svg>
 `
+
 
 
 const EXPIREDICON = `<svg
@@ -105,7 +107,6 @@ xmlns="http://www.w3.org/2000/svg"
        transform="matrix(1.2494317,0,0,1.2494317,-2.8616526,0.49078499)" />
 </g>
 </svg>
-
 `
 
 
@@ -151,6 +152,8 @@ function getIcon(marker: RainValue, acceptedLimit:number) {
 // Define the handle types which will be passed to the forwardRef
 export type MapComponentHandle = {
   updateAcceptedRainValue: (value:number) => void;
+  setMarkerVisibility: (value:boolean) => void;
+
 };
 
 type MapComponentProps = {
@@ -166,6 +169,7 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
   const [acceptedLimit, setAcceptedLimit]  = useState(0.2);
   const [proximityLimit, setProximityLimit]  = useState(1);
   const [initialized, setInitialized] = useState(false);
+  const [showHistoryMarkers, setShowHistoryMarkers] = useState(true);
 
 
 
@@ -175,6 +179,9 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
     updateAcceptedRainValue(value:number) {
       setAcceptedLimit(value);
 
+    },
+    setMarkerVisibility(value:boolean) {
+      setShowHistoryMarkers(value)
     }
   })
   );
@@ -359,7 +366,7 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       
-      {
+      { showHistoryMarkers ? 
         getValidMarkers().map((elem, idx) => 
 
         {
@@ -389,7 +396,9 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
           )
 
         }
+
       )
+      : null
 }
 
 
