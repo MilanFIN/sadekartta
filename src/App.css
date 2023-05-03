@@ -9,18 +9,10 @@
 @keyframes spin {
   to {transform:rotate(360deg);}
 }
-
+/*
 h2 {
   text-align:center;
 }
-
-.markerPopup {
-  text-align: center;
-  z-index: 15000;
-
-}
-
-
 #aboutButton {
   color:white;
   margin-top:-5px;
@@ -32,16 +24,11 @@ h2 {
   margin-top: 10px;
 }
 
-
-
-
-
 .aboutContent {
   height:80%;
   overflow-y: scroll;
 
 }
-
 
 .loadingBkgDiv {
   background-color: black;
@@ -59,39 +46,18 @@ h2 {
 
 }
 
+*/
+
+.markerPopup {
+  text-align: center;
+  z-index: 15000;
+}
+
+
+
+
 .loadingSpinner {
   animation: spin 1500ms linear infinite;
-  position: absolute;
-  top:50%;
-  left: 50%;
-  z-index: 5000;
-}
-
-
-
-.controlLabel {
-  width: 100%; /* Full-width */
-  height: 25%; /* Specified height */
-  color:white;
-}
-
-.slider {
-  width: 100%; /* Full-width */
-  height: 25%; /* Specified height */
-  outline: none; /* Remove outline */
-}
-
-
-
-.layerControls {
-
-}
-
-.mapControlsBkg {
-  z-index: 4999;
-  background-color: #000;
-  opacity: 0.4;
-
 }
 
 
@@ -127,25 +93,6 @@ h2 {
   animation: fadeOut 1s;
   animation-fill-mode: forwards;
 }
-
-
-.fadeout2 {
-
-  /*
-    display:none;
-
-  animation-fill-mode: backwards;
-  animation: fadeout 1000ms;
-
-  opacity: 0;
-  transition: opacity linear 1s ;  
-    */
-
-    opacity: 0;
-    transition: opacity 3s ease-in-out; 
-  }
-
-
 
 @keyframes fadein {
     from { opacity: 0;  }
@@ -183,8 +130,6 @@ h2 {
   color: lightgrey !important;
 }
 
-
-
 .App {
   text-align: center;
   background-color: #222;
@@ -194,16 +139,6 @@ h2 {
   height: 100%;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
 
 .App-header {
   background-color: #282c34;
@@ -219,14 +154,3 @@ h2 {
 .App-link {
   color: #61dafb;
 }
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-

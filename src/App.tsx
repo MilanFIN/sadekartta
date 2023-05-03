@@ -15,7 +15,7 @@ import Moment from 'react-moment';
 import moment from 'moment';
 import LayerControls from './LayerControls';
 
-import {ReactComponent as DropDownIcon} from './menu_react.svg';
+import {ReactComponent as DropDownIcon} from './assets/menu_react.svg';
 
 
 const DROPDOWNICON = `<svg
@@ -116,7 +116,7 @@ function App() {
 
           </div>
 
-            <Loop className={`loadingSpinner  transition-all duration-500 ${showLoadView ? "opacity-100 visible" : "opacity-0 visible"}`}/>
+            <Loop className={`loadingSpinner top-[50%] left-[50%] absolute z-6000 transition-all duration-500 ${showLoadView ? "opacity-100 visible" : "opacity-0 visible"}`}/>
   
 
   
@@ -132,19 +132,19 @@ function App() {
 
 
 
-<div className={`${(showDropDown || showAbout) ? "opacity-50 visible" : "opacity-0 invisible"} 
-                          absolute w-full h-full top-0 bottom-0 bg-black	z-6000 transition-all duration-500  `}>
-                  </div>
-          
+          <div className={`${(showDropDown || showAbout) ? "opacity-50 visible" : "opacity-0 invisible"} 
+                    absolute w-full h-full top-0 bottom-0 bg-black	z-6000 transition-all duration-500  `}>
+            </div>
+    
 
-                    {
-                      <button className={`absolute w-14 h-14 top-8 right-8 z-6000 text-white bg-black opacity-30 p-1 rounded-md`}
-                      onClick={() => displayDropDown()}>
-                        
-                        <DropDownIcon></DropDownIcon>
-                      </button>
-                    }
-                    
+              {
+                <button className={`absolute w-14 h-14 top-8 right-8 z-6000 text-white bg-black opacity-30 p-1 rounded-md`}
+                onClick={() => displayDropDown()}>
+                  
+                  <DropDownIcon></DropDownIcon>
+                </button>
+              }
+              
 
           <div className={`absolute w-24 h-10 top-8 right-16 z-6000
                             ${(showDropDown) ? "visible" : "invisible"}`}>
@@ -166,20 +166,3 @@ function App() {
 }
 
 export default App;
-
-/*
-
-
-
-
-open={showDropDown} onClose={() => setShowDropDown(false)}
-          <div className={`loadingDiv transition-all duration-500 ${showLoadView ? "opacity-100 " : "opacity-0 "}`}> 
-            <Loop className="loadingSpinner"/>
-  
-          </div>
-                    <div className={`loadingDiv`}> 
-    
-            </div>
-                      <Loop className={`absolute top-3/5 left-3/6 z-6000 transition-all duration-500 ${showLoadView ? "opacity-100 " : "opacity-0 "}`}/>
-
-*/

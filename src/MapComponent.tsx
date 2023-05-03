@@ -254,6 +254,7 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
                   let digitValue = parseFloat(valueStr);
                   if (digitValue < 0) {
                     digitValue = 0.0;
+                    continue; //placeholder, until there is a better way to distinguish between valid and invalid samples
                   }
                   let dateString = item.getElementsByTagName('BsWfs:Time')[0].textContent!;
                   let date = new Date(Date.parse(dateString));

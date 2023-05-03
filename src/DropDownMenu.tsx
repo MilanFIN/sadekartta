@@ -21,8 +21,8 @@ export default function DropDownMenuProps(props:DropDownMenuProps) {
 
     return (
 
-      <div className={`absolute z-6000 flex  bg-gray-600 top-0 right-6
-                      ${open ? "opacity-100 visible" : "opacity-0 "}
+      <div className={`absolute z-6000 flex  bg-gray-600 top-0 right-6 rounded-md
+                      ${open ? "opacity-70 visible" : "opacity-0 "}
                       transition-all duration-250` }>
         <ul >
           <button  onClick={() => props.showAbout()}>

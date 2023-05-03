@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {ReactComponent as MarkerLayerIcon} from './hide.svg';
+import {ReactComponent as MarkerLayerIcon} from './assets/hide.svg';
 
 
 type LayerControlProps = {
@@ -18,16 +18,6 @@ const LayerControls = ((props:LayerControlProps) => {
 		setMarkersVisible(!markersVisible);
 	}) 
 
-	/*
-	  position: absolute;
-  bottom: 50px;
-  left: 50px;
-  width:150px;
-  height:120px;
-
-  z-index: 5000;
-
-	*/
 	return (
 	  	<div className="absolute bottom-8 left-8 h-12 w-12 z-6000">
 		

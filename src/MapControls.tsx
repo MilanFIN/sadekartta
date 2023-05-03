@@ -27,16 +27,7 @@ const MapControls = ((props:MapControlProps) => {
 	  props.updateAcceptedRainValue(parseFloat(event.target.value));
   
 	}
-  
-	/*
-	opacity: 1;
-	width: 50%;
-	height: 50%;
-	background-color: #000;
-	color: white;
-	font-size:xx-large;
-	*/
-	
+
 	return (
 	  	<div className="absolute bottom-8 right-8 w-44 h-32 z-6000 border-4 border-black bg-black bg-opacity-50 pt-1">
 		
@@ -48,7 +39,6 @@ const MapControls = ((props:MapControlProps) => {
 			<input type="range" min={0.0} max={3.0}  className="w-full h-8 " id="acceptedRange" step={0.1}
 			onChange={changeLimit} value={acceptedLimit}></input>
 		</div>
-
 
 	)
   })
