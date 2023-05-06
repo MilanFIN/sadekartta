@@ -27,6 +27,27 @@ class RainValue {
   }
 }
 
+class RainPrediction {
+  position: string;
+  lat: number;
+  lon: number;
+  date: number;
+  value: number;
+  valid: boolean;
+  constructor(position: string, lat: number, lon:number, date:number, value:number) {
+    this.position = position;
+    this.lat = lat;
+    this.lon = lon;
+    this.date = date;
+    this.value = value;
+    this.valid = false;
+  }
+  getPosition() {
+    return {lat: this.lat, lng: this.lon};
+  }
+}
+
+
 
 const CURRENTICON = `<svg
 viewBox="0 0 11 11"
@@ -148,6 +169,27 @@ function getIcon(marker: RainValue, acceptedLimit:number) {
   return svgIcon;
 }
 
+function getPredictionIcon(marker: RainPrediction, acceptedLimit:number) {
+
+  const currentDate = new Date();
+  let iconSvg = CURRENTICON;
+
+
+  
+
+  const svgIcon = Leaflet.divIcon({
+    html: iconSvg,
+      className: "",
+      iconSize: [50, 50],
+      popupAnchor: [0,-25],
+      //iconAnchor: [12, 40],
+  });
+
+
+  return svgIcon;
+}
+
+
 
 // Define the handle types which will be passed to the forwardRef
 export type MapComponentHandle = {
@@ -165,12 +207,18 @@ type MapComponentProps = {
 const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, ref) => {
 
   let initialObj: RainValue[] | (() => RainValue[]) = [];
+  let initialPredictionObj: RainPrediction[] | (() => RainPrediction[]) = [];
+
   const [markers, setMarkers]  = useState<RainValue[]>(initialObj);
   const [acceptedLimit, setAcceptedLimit]  = useState(0.2);
   const [proximityLimit, setProximityLimit]  = useState(1);
-  const [initialized, setInitialized] = useState(false);
+  //const [initialized, setInitialized] = useState(false);
+  let initialized = false;
   const [showHistoryMarkers, setShowHistoryMarkers] = useState(true);
 
+  const [predictionMarkers, setPredictionMarkers] = useState<RainPrediction[]>(initialPredictionObj);
+
+  const [predictionDates, setPredictionDates] = useState<number[]>([]);
 
 
 
@@ -208,6 +256,7 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
     if (initialized) {
       return;
     }
+    initialized = true;
 
 
 
@@ -221,79 +270,134 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
     const startDateString = startDate.toISOString();
     const endDateString = currentDate.toISOString();
 
-      let stationBatches = [STATIONS.slice(95), STATIONS.slice(95)]; //
+    let stationBatches = [STATIONS.slice(0)];//[STATIONS.slice(95), STATIONS.slice(95)]; //
 
-      stationBatches.forEach(subStations => {
-        let url = "https://opendata.fmi.fi/wfs?service=WFS&version=2.0.0&request=getFeature&storedquery_id=fmi::observations::weather::daily::simple";
+    stationBatches.forEach(subStations => {
+      let url = "https://opendata.fmi.fi/wfs?service=WFS&version=2.0.0&request=getFeature&storedquery_id=fmi::observations::weather::daily::simple";
 
-        subStations.forEach(station => {
-          url += "&fmisid=" + station;
-        });
-        //finally setting date limits for data
-        url += "&starttime="+startDateString+"&endtime="+endDateString;
-  
-  
-        fetch(url).then(response => {
-          response.text().then(responseText => {
-  
-            let rainValueMap:Map<String, RainValue> = new Map();
-  
-            const parser = new DOMParser();
-            const xml = parser.parseFromString(responseText, 'text/xml');
-            const elems = xml.getElementsByTagName('BsWfs:BsWfsElement')
-  
-            let position = "";
-            let latestRainValue = new RainValue("",0,0,new Date,0);
-            for (let i = 0; i < elems.length; i++) {
-              let item = elems[i];
-              let type = item.getElementsByTagName('BsWfs:ParameterName')[0].textContent;
-              if (type === "rrday") {
-  
-                let valueStr = item.getElementsByTagName('BsWfs:ParameterValue')[0].textContent!;
-                if (valueStr != "NaN") {
-                  let digitValue = parseFloat(valueStr);
-                  if (digitValue < 0) {
-                    digitValue = 0.0;
-                    continue; //placeholder, until there is a better way to distinguish between valid and invalid samples
-                  }
-                  let dateString = item.getElementsByTagName('BsWfs:Time')[0].textContent!;
-                  let date = new Date(Date.parse(dateString));
-                  let position =  item.getElementsByTagName('gml:pos')[0].textContent!.trim();
+      subStations.forEach(station => {
+        url += "&fmisid=" + station;
+      });
+      //finally setting date limits for data
+      url += "&starttime="+startDateString+"&endtime="+endDateString;
 
-                  let lat = parseFloat(position.split(" ")[0])
-                  let lon = parseFloat(position.split(" ")[1])
-                  let value = digitValue;
 
-                  let valueObj = new RainValue(position, lat, lon, date, value);
+      fetch(url).then(response => {
+        response.text().then(responseText => {
 
-                  if (rainValueMap.has(position)) {
-                    if (rainValueMap.get(position)!.date < valueObj.date) {
-                      rainValueMap.set(position, valueObj);
-                    }
-                  }
-                  else {
+          let rainValueMap:Map<String, RainValue> = new Map();
+
+          const parser = new DOMParser();
+          const xml = parser.parseFromString(responseText, 'text/xml');
+          const elems = xml.getElementsByTagName('BsWfs:BsWfsElement')
+
+          let position = "";
+          let latestRainValue = new RainValue("",0,0,new Date,0);
+          for (let i = 0; i < elems.length; i++) {
+            let item = elems[i];
+            let type = item.getElementsByTagName('BsWfs:ParameterName')[0].textContent;
+            if (type === "rrday") {
+
+              let valueStr = item.getElementsByTagName('BsWfs:ParameterValue')[0].textContent!;
+              if (valueStr != "NaN") {
+                let digitValue = parseFloat(valueStr);
+                if (digitValue < 0) {
+                  digitValue = 0.0;
+                }
+                let dateString = item.getElementsByTagName('BsWfs:Time')[0].textContent!;
+                let date = new Date(Date.parse(dateString));
+                let position =  item.getElementsByTagName('gml:pos')[0].textContent!.trim();
+
+                let lat = parseFloat(position.split(" ")[0])
+                let lon = parseFloat(position.split(" ")[1])
+                let value = digitValue;
+
+                let valueObj = new RainValue(position, lat, lon, date, value);
+
+                if (rainValueMap.has(position)) {
+                  if (rainValueMap.get(position)!.date < valueObj.date) {
                     rainValueMap.set(position, valueObj);
                   }
-
                 }
-  
-  
+                else {
+                  rainValueMap.set(position, valueObj);
+                }
+
               }
-              
-            }  
-  
-  
-            let values = Array.from(rainValueMap.values());
-            let sortedValues = values.concat(markers).sort((a, b) => (a.date < b.date) ? 1 : -1);
-            setMarkers([...sortedValues] )//markers =>
 
-            props.loadingDone();
-          });
-      });
+
+            }
+            
+          }  
+
+
+          let values = Array.from(rainValueMap.values());
+          let sortedValues = values.concat(markers).sort((a, b) => (a.date < b.date) ? 1 : -1);
+          setMarkers([...sortedValues] )//markers =>
+
+          props.loadingDone();
+        });
+    });
+
+
+  });
+
+  let predUrl = "https://opendata.fmi.fi/wfs?service=WFS&version=2.0.0&request=getFeature&storedquery_id=ecmwf::forecast::surface::obsstations::simple";
+
+
+  let endDate = new Date();
+  let lead = 3;
+  endDate.setTime(currentDate.getTime() + (lead*60*60*1000));
+
+  const predStartDString = currentDate.toISOString();
+  const predEndDString = endDate.toISOString();
+
+  predUrl += "&starttime="+predStartDString+"&endtime="+predEndDString;
+
 
   
-      });
-      setInitialized(true);
+  fetch(predUrl).then(response => {
+    response.text().then(responseText => {
+      let responseDates = Array<number>();
+      let predictions = Array<RainPrediction>();
+      const parser = new DOMParser();
+      const xml = parser.parseFromString(responseText, 'text/xml');
+      const elems = xml.getElementsByTagName('BsWfs:BsWfsElement')
+      for (let i = 0; i < elems.length; i++) {
+        let item = elems[i];
+        let type = item.getElementsByTagName('BsWfs:ParameterName')[0].textContent;
+        if (type === "Precipitation1h") {
+          let valueStr = item.getElementsByTagName('BsWfs:ParameterValue')[0].textContent!;
+          let dateStr = item.getElementsByTagName('BsWfs:Time')[0].textContent!;
+
+          if (valueStr != "NaN") {
+            let digitValue = parseFloat(valueStr);
+            if (digitValue < 0) {
+              digitValue = 0.0;
+            }
+            let dateObj = Date.parse(dateStr)
+            if (!(responseDates.includes(dateObj))) {
+              responseDates.push(dateObj)
+            }
+            let position =  item.getElementsByTagName('gml:pos')[0].textContent!.trim();
+
+            let lat = parseFloat(position.split(" ")[0])
+            let lon = parseFloat(position.split(" ")[1])
+
+            let pred = new RainPrediction(position, lat,lon,dateObj, digitValue);
+            predictions.push(pred);
+          }
+
+        }
+      }
+
+      setPredictionMarkers([... predictions]);
+      setPredictionDates(responseDates)
+      console.log(responseDates)
+    })
+  });
+  
+
 
     //});
 
@@ -333,6 +437,18 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
     return validMarkers;
   }
 
+  const getPredictions = () => {
+    let validMarkers = Array<RainPrediction>();
+    let compDate = predictionDates[0];
+
+    predictionMarkers.forEach(element => {
+      if (element.date === compDate) {
+        validMarkers.push(element)
+      }
+    });
+
+    return validMarkers;
+  }
 
 
   const zoomChanged = (zoomLevel:number) => {
@@ -400,9 +516,39 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
 
       )
       : null
-}
+    }
 
+      {
+        getPredictions().map((elem, idx) => 
+        {
+          let currentTime = 0;//(new Date()).getMilliseconds().toString();
 
+          return (
+            <Pane 
+            key={elem.position + currentTime + "_markerpane" + elem.valid/*`marker-${elem.position}` + Date.now().toString()*/}
+             name={elem.position + currentTime + "_markerpane"} /*elem.position + currentTime + "_marker"*/ 
+             style={{ zIndex: 1000+idx }}
+             className={"fadein"}>
+
+    <Marker key={elem.position + currentTime + "_markerkey"}  position={elem.getPosition()} icon={getPredictionIcon(elem, acceptedLimit)} >
+      <Pane name={elem.position + currentTime +"_tooltip"}
+      /*elem.position + currentTime +"_tooltip"*/
+           style={{ zIndex: 2000+idx }}>
+              <Tooltip direction="center" offset={[0, 0]} opacity={1}  permanent={true} className={"tooltip"} ><b>{elem.value+"mm"}</b>   </Tooltip>
+      </Pane>
+      <Pane name={elem.position + currentTime +"_popup"} /*elem.position + currentTime +"_popup"*/
+           style={{ zIndex: 9001 }}>
+        <Popup >
+          <div className="markerPopup" dangerouslySetInnerHTML={{ __html: "" }} />
+        </Popup>
+      </Pane>
+  </Marker>
+</Pane>
+          )
+        }
+        ) 
+      }
+      
       <InnerObj mapRef={props.mapRef} zoomChanged={zoomChanged}/>
 
     </MapContainer>
