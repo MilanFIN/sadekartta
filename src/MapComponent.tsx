@@ -32,15 +32,19 @@ class RainPrediction {
   lat: number;
   lon: number;
   date: number;
+  dateObj: Date;
   value: number;
   valid: boolean;
-  constructor(position: string, lat: number, lon:number, date:number, value:number) {
+  offset: number; //prediction in future
+  constructor(position: string, lat: number, lon:number, date:number, value:number, offset:number) {
     this.position = position;
     this.lat = lat;
     this.lon = lon;
     this.date = date;
+    this.dateObj = new Date(date)
     this.value = value;
     this.valid = false;
+    this.offset = offset
   }
   getPosition() {
     return {lat: this.lat, lng: this.lon};
@@ -194,6 +198,7 @@ function getPredictionIcon(marker: RainPrediction, acceptedLimit:number) {
 // Define the handle types which will be passed to the forwardRef
 export type MapComponentHandle = {
   updateAcceptedRainValue: (value:number) => void;
+  updatePredictionDistance: (value:number) => void;
   setMarkerVisibility: (value:boolean) => void;
 
 };
@@ -211,6 +216,7 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
 
   const [markers, setMarkers]  = useState<RainValue[]>(initialObj);
   const [acceptedLimit, setAcceptedLimit]  = useState(0.2);
+  const [predictionDistance, setPredictionDistance] = useState(1);
   const [proximityLimit, setProximityLimit]  = useState(1);
   //const [initialized, setInitialized] = useState(false);
   let initialized = false;
@@ -228,13 +234,14 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
       setAcceptedLimit(value);
 
     },
+    updatePredictionDistance(value:number) {
+      setPredictionDistance(value);
+    },
     setMarkerVisibility(value:boolean) {
       setShowHistoryMarkers(value)
     }
   })
   );
-
-
 
   const getMarkerPopupMessage = (marker:RainValue) => {
     let message = "Sijainti: " + marker.position + "\n";
@@ -251,6 +258,19 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
     }
     return message;
   }
+
+  const getPredictionPopupMessage = (marker:RainPrediction) => {
+    let message = "Sijainti: " + marker.position + "\n";
+    message += "Ennuste ("
+    message += marker.offset
+    message += "h): <b>" + marker.value + "mm";
+
+    const currentDate = new Date();
+  
+
+    return message;
+  }
+
   useEffect(() => {
 
     if (initialized) {
@@ -375,16 +395,19 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
             if (digitValue < 0) {
               digitValue = 0.0;
             }
-            let dateObj = Date.parse(dateStr)
-            if (!(responseDates.includes(dateObj))) {
-              responseDates.push(dateObj)
+            let dateNum = Date.parse(dateStr)
+            if (!(responseDates.includes(dateNum))) {
+              responseDates.push(dateNum)
+              responseDates.sort();
             }
             let position =  item.getElementsByTagName('gml:pos')[0].textContent!.trim();
 
             let lat = parseFloat(position.split(" ")[0])
             let lon = parseFloat(position.split(" ")[1])
 
-            let pred = new RainPrediction(position, lat,lon,dateObj, digitValue);
+            let offset = responseDates.indexOf(dateNum)+1;
+
+            let pred = new RainPrediction(position, lat,lon,dateNum, digitValue, offset);
             predictions.push(pred);
           }
 
@@ -437,12 +460,11 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
     return validMarkers;
   }
 
-  const getPredictions = () => {
+  const getValidPredictions = () => {
     let validMarkers = Array<RainPrediction>();
-    let compDate = predictionDates[0];
 
     predictionMarkers.forEach(element => {
-      if (element.date === compDate) {
+      if (element.offset === predictionDistance) {
         validMarkers.push(element)
       }
     });
@@ -519,27 +541,27 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
     }
 
       {
-        getPredictions().map((elem, idx) => 
+        getValidPredictions().map((elem, idx) => 
         {
           let currentTime = 0;//(new Date()).getMilliseconds().toString();
 
           return (
             <Pane 
-            key={elem.position + currentTime + "_markerpane" + elem.valid/*`marker-${elem.position}` + Date.now().toString()*/}
-             name={elem.position + currentTime + "_markerpane"} /*elem.position + currentTime + "_marker"*/ 
+            key={elem.position + currentTime + "_predictionpane" + elem.valid/*`marker-${elem.position}` + Date.now().toString()*/}
+             name={elem.position + currentTime + "_predictionpane"} /*elem.position + currentTime + "_marker"*/ 
              style={{ zIndex: 1000+idx }}
              className={"fadein"}>
 
-    <Marker key={elem.position + currentTime + "_markerkey"}  position={elem.getPosition()} icon={getPredictionIcon(elem, acceptedLimit)} >
-      <Pane name={elem.position + currentTime +"_tooltip"}
+    <Marker key={elem.position + currentTime + "_predictionkey"}  position={elem.getPosition()} icon={getPredictionIcon(elem, acceptedLimit)} >
+      <Pane name={elem.position + currentTime +"_predictiontooltip"}
       /*elem.position + currentTime +"_tooltip"*/
            style={{ zIndex: 2000+idx }}>
               <Tooltip direction="center" offset={[0, 0]} opacity={1}  permanent={true} className={"tooltip"} ><b>{elem.value+"mm"}</b>   </Tooltip>
       </Pane>
-      <Pane name={elem.position + currentTime +"_popup"} /*elem.position + currentTime +"_popup"*/
+      <Pane name={elem.position + currentTime +"_predictionpopup"} /*elem.position + currentTime +"_popup"*/
            style={{ zIndex: 9001 }}>
         <Popup >
-          <div className="markerPopup" dangerouslySetInnerHTML={{ __html: "" }} />
+          <div className="markerPopup" dangerouslySetInnerHTML={{ __html: getPredictionPopupMessage(elem).replace(/\n/g,'<br/>') }} />
         </Popup>
       </Pane>
   </Marker>

@@ -106,6 +106,9 @@ function App() {
         <MapControls mapRef={mapRef} updateAcceptedRainValue={(value:number) => {
                                         mapContainerRef.current!.updateAcceptedRainValue(value);
                                       }}
+                                      updatePredictionDistance={(value:number) => {
+                                        mapContainerRef.current!.updatePredictionDistance(value);
+                                      }}
           />
         <LayerControls mapRef={mapRef} setMarkerVisibility={(value:boolean) => {
                               mapContainerRef.current!.setMarkerVisibility(value);
