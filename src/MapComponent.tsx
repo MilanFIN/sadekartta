@@ -134,7 +134,85 @@ xmlns="http://www.w3.org/2000/svg"
 </svg>
 `
 
+const CLOUDICON = 
+`
 
+<svg
+   width="18mm"
+   height="10.5mm"
+   viewBox="0 0 18 10.5"
+   version="1.1"
+   id="svg5">
+  <defs
+     id="defs2" />
+  <g
+     id="layer1"
+     transform="matrix(0.38819156,0,0,0.38819156,-2.398147,-0.20170788)">
+    <g
+       id="layer1-5"
+       transform="matrix(1.0098434,0,0,1.0146323,-0.02785507,0.05003499)">
+      <ellipse
+         style="fill:#000000;fill-opacity:1;stroke-width:0.250843"
+         id="path234-62"
+         cx="17.376059"
+         cy="17.59013"
+         rx="11.163603"
+         ry="8.9314547" />
+      <ellipse
+         style="fill:#000000;fill-opacity:1;stroke-width:0.264583"
+         id="path236-9"
+         cx="30.221846"
+         cy="11.435722"
+         rx="10.508806"
+         ry="10.87748" />
+      <ellipse
+         style="fill:#000000;fill-opacity:1;stroke-width:0.264583"
+         id="path238-1"
+         cx="41.008991"
+         cy="17.484924"
+         rx="9.3101416"
+         ry="8.9839144" />
+      <rect
+         style="fill:#000000;fill-opacity:1;stroke-width:0.234407"
+         id="rect292-2"
+         width="24.486675"
+         height="10.523985"
+         x="17.019716"
+         y="15.948637" />
+    </g>
+    <ellipse
+       style="fill:#0000bb;fill-opacity:1;stroke-width:0.250843"
+       id="path234"
+       cx="17.604137"
+       cy="17.848032"
+       rx="11.163603"
+       ry="8.9314547" />
+    <ellipse
+       style="fill:#0000bb;fill-opacity:1;stroke-width:0.264583"
+       id="path236"
+       cx="30.449924"
+       cy="11.693625"
+       rx="10.508806"
+       ry="10.87748" />
+    <ellipse
+       style="fill:#0000bb;fill-opacity:1;stroke-width:0.264583"
+       id="path238"
+       cx="41.237068"
+       cy="17.742826"
+       rx="9.3101416"
+       ry="8.9839144" />
+    <rect
+       style="fill:#0000bb;fill-opacity:1;stroke-width:0.234407"
+       id="rect292"
+       width="24.486675"
+       height="10.523985"
+       x="17.247795"
+       y="16.206539" />
+  </g>
+</svg>
+
+
+`
 
 
 function getIcon(marker: RainValue, acceptedLimit:number) {
@@ -176,15 +254,16 @@ function getIcon(marker: RainValue, acceptedLimit:number) {
 function getPredictionIcon(marker: RainPrediction, acceptedLimit:number) {
 
   const currentDate = new Date();
-  let iconSvg = CURRENTICON;
+  let iconSvg = CLOUDICON;
 
 
   
 
   const svgIcon = Leaflet.divIcon({
     html: iconSvg,
+    
       className: "",
-      iconSize: [50, 50],
+      iconSize: [70, 50],
       popupAnchor: [0,-25],
       //iconAnchor: [12, 40],
   });
@@ -200,7 +279,7 @@ export type MapComponentHandle = {
   updateAcceptedRainValue: (value:number) => void;
   updatePredictionDistance: (value:number) => void;
   setMarkerVisibility: (value:boolean) => void;
-
+  setPredictionVisibility: (value:boolean) => void;
 };
 
 type MapComponentProps = {
@@ -221,6 +300,9 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
   //const [initialized, setInitialized] = useState(false);
   let initialized = false;
   const [showHistoryMarkers, setShowHistoryMarkers] = useState(true);
+  const [showPredictionMarkers, setShowPredictionMarkers] = useState(true);
+
+  
 
   const [predictionMarkers, setPredictionMarkers] = useState<RainPrediction[]>(initialPredictionObj);
 
@@ -239,6 +321,9 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
     },
     setMarkerVisibility(value:boolean) {
       setShowHistoryMarkers(value)
+    },
+    setPredictionVisibility(value:boolean) {
+      setShowPredictionMarkers(value)
     }
   })
   );
@@ -427,21 +512,23 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
 
 }, []);
 
+  const checkCollision = (validLat:number, validLon:number, newLat:number, newLon:number) => {
+    if (Math.abs(validLon - newLon) < proximityLimit && Math.abs(validLat - newLat) < proximityLimit) { //
+      return true;
+    }
+  }
 
   const getValidMarkers = () => {
 
     let validMarkers = Array<RainValue>();
-    let invalidMarkers = Array<RainValue>();
     
-    let sortedMarkers = markers;//markers.sort((a, b) => (a.date < b.date) ? 1 : -1);
 
-    sortedMarkers.forEach(marker => {
+    markers.forEach(marker => {
       let collides = false;
       validMarkers.every(validMarker => {
-        if (Math.abs(validMarker.lon - marker.lon) < proximityLimit && Math.abs(validMarker.lat - marker.lat) < proximityLimit) { //
+        if (checkCollision(validMarker.lat, validMarker.lon, marker.lat, marker.lon)) { //
           collides = true;
           marker.valid = false;
-          //invalidMarkers.push(marker)
           return false;
         }
         return true;
@@ -453,23 +540,46 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
 
     });
 
-    validMarkers = validMarkers.concat(invalidMarkers);
 
     //must sort to get around zindex not affecting popups and as such popups get hidden behind other markers
-    validMarkers.sort((a, b) => (a.lat < b.lat) ? 1 : -1);
+    //validMarkers.sort((a, b) => (a.lat < b.lat) ? 1 : -1);
     return validMarkers;
   }
 
   const getValidPredictions = () => {
-    let validMarkers = Array<RainPrediction>();
+    let correctDateMarkers = Array<RainPrediction>();
 
     predictionMarkers.forEach(element => {
       if (element.offset === predictionDistance) {
-        validMarkers.push(element)
+        correctDateMarkers.push(element)
       }
     });
 
+    let validMarkers = Array<RainPrediction>();
+
+    correctDateMarkers.forEach(marker => {
+      let collides = false;
+      validMarkers.every(validMarker => {
+        if (checkCollision(validMarker.lat, validMarker.lon, marker.lat, marker.lon)) { //
+          collides = true;
+          marker.valid = false;
+          return false;
+        }
+        return true;
+      });
+      if (!collides) {
+        marker.valid = true;
+        validMarkers.push(marker);
+      }
+
+    });
+
+
+    //must sort to get around zindex not affecting popups and as such popups get hidden behind other markers
+    //validMarkers.sort((a, b) => (a.lat < b.lat) ? 1 : -1);
     return validMarkers;
+
+
   }
 
 
@@ -540,7 +650,7 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
       : null
     }
 
-      {
+      { showPredictionMarkers ? 
         getValidPredictions().map((elem, idx) => 
         {
           let currentTime = 0;//(new Date()).getMilliseconds().toString();
@@ -550,7 +660,7 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
             key={elem.position + currentTime + "_predictionpane" + elem.valid/*`marker-${elem.position}` + Date.now().toString()*/}
              name={elem.position + currentTime + "_predictionpane"} /*elem.position + currentTime + "_marker"*/ 
              style={{ zIndex: 1000+idx }}
-             className={"fadein"}>
+             className={elem.valid ? "fadein" : "fadeout"}>
 
     <Marker key={elem.position + currentTime + "_predictionkey"}  position={elem.getPosition()} icon={getPredictionIcon(elem, acceptedLimit)} >
       <Pane name={elem.position + currentTime +"_predictiontooltip"}
@@ -568,7 +678,7 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
 </Pane>
           )
         }
-        ) 
+        ) : null
       }
       
       <InnerObj mapRef={props.mapRef} zoomChanged={zoomChanged}/>

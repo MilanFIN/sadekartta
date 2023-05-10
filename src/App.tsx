@@ -111,8 +111,11 @@ function App() {
                                       }}
           />
         <LayerControls mapRef={mapRef} setMarkerVisibility={(value:boolean) => {
-                              mapContainerRef.current!.setMarkerVisibility(value);
-                            }}
+                                          mapContainerRef.current!.setMarkerVisibility(value);
+                                        }}
+                                        setPredictionVisibility={(value:boolean) => {
+                                          mapContainerRef.current!.setPredictionVisibility(value);
+                                        }}
           />
   
           <div className={`absolute w-full h-full top-0 bottom-0 bg-black	z-6000 transition-all duration-500 ${showLoadView ? "opacity-50 visible" : "opacity-0 invisible"}`} >
