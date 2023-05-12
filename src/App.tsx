@@ -144,7 +144,7 @@ function App() {
     
 
               {
-                <button className={`absolute w-14 h-14 top-8 right-8 z-6000 text-white bg-black opacity-30 p-1 rounded-md`}
+                <button className={`absolute w-14 h-14 top-8 right-8 z-6000 text-white bg-black opacity-30 p-1 rounded-md hover:opacity-50`}
                 onClick={() => displayDropDown()}>
                   
                   <DropDownIcon></DropDownIcon>

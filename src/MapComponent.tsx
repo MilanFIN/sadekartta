@@ -152,55 +152,55 @@ const CLOUDICON =
        id="layer1-5"
        transform="matrix(1.0098434,0,0,1.0146323,-0.02785507,0.05003499)">
       <ellipse
-         style="fill:#000000;fill-opacity:1;stroke-width:0.250843"
-         id="path234-62"
-         cx="17.376059"
-         cy="17.59013"
-         rx="11.163603"
-         ry="8.9314547" />
-      <ellipse
-         style="fill:#000000;fill-opacity:1;stroke-width:0.264583"
-         id="path236-9"
-         cx="30.221846"
-         cy="11.435722"
-         rx="10.508806"
-         ry="10.87748" />
-      <ellipse
-         style="fill:#000000;fill-opacity:1;stroke-width:0.264583"
-         id="path238-1"
-         cx="41.008991"
-         cy="17.484924"
-         rx="9.3101416"
-         ry="8.9839144" />
-      <rect
-         style="fill:#000000;fill-opacity:1;stroke-width:0.234407"
-         id="rect292-2"
-         width="24.486675"
-         height="10.523985"
-         x="17.019716"
-         y="15.948637" />
+       style="fill:#000000;fill-opacity:1;stroke-width:0.250843"
+       id="path234"
+       cx="17.604137"
+       cy="17.848032"
+       rx="9.5"
+       ry="9.5" />
+    <ellipse
+       style="fill:#000000;fill-opacity:1;stroke-width:0.264583"
+       id="path236"
+       cx="30.449924"
+       cy="11.693625"
+       rx="10.5"
+       ry="10.5" />
+    <ellipse
+       style="fill:#000000;fill-opacity:1;stroke-width:0.264583"
+       id="path238"
+       cx="41.237068"
+       cy="17.742826"
+       rx="9.5"
+       ry="9.5" />
+    <rect
+       style="fill:#000000;fill-opacity:1;stroke-width:0.234407"
+       id="rect292"
+       width="24.886675"
+       height="10.923985"
+       x="17.247795"
+       y="16.206539" />
     </g>
     <ellipse
        style="fill:#0000bb;fill-opacity:1;stroke-width:0.250843"
        id="path234"
        cx="17.604137"
        cy="17.848032"
-       rx="11.163603"
-       ry="8.9314547" />
+       rx="9.0"
+       ry="9.0" />
     <ellipse
        style="fill:#0000bb;fill-opacity:1;stroke-width:0.264583"
        id="path236"
        cx="30.449924"
        cy="11.693625"
-       rx="10.508806"
-       ry="10.87748" />
+       rx="10.0"
+       ry="10.0" />
     <ellipse
        style="fill:#0000bb;fill-opacity:1;stroke-width:0.264583"
        id="path238"
        cx="41.237068"
        cy="17.742826"
-       rx="9.3101416"
-       ry="8.9839144" />
+       rx="9.0"
+       ry="9.0" />
     <rect
        style="fill:#0000bb;fill-opacity:1;stroke-width:0.234407"
        id="rect292"
@@ -255,9 +255,6 @@ function getPredictionIcon(marker: RainPrediction, acceptedLimit:number) {
 
   const currentDate = new Date();
   let iconSvg = CLOUDICON;
-
-
-  
 
   const svgIcon = Leaflet.divIcon({
     html: iconSvg,
@@ -375,7 +372,7 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
     const startDateString = startDate.toISOString();
     const endDateString = currentDate.toISOString();
 
-    let stationBatches = [STATIONS.slice(0)];//[STATIONS.slice(95), STATIONS.slice(95)]; //
+    let stationBatches = [STATIONS.slice(95), STATIONS.slice(95)]; //[STATIONS.slice(0)];//
 
     stationBatches.forEach(subStations => {
       let url = "https://opendata.fmi.fi/wfs?service=WFS&version=2.0.0&request=getFeature&storedquery_id=fmi::observations::weather::daily::simple";
@@ -465,6 +462,8 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
     response.text().then(responseText => {
       let responseDates = Array<number>();
       let predictions = Array<RainPrediction>();
+      //let predictions:Map<String, RainValue> = new Map();
+
       const parser = new DOMParser();
       const xml = parser.parseFromString(responseText, 'text/xml');
       const elems = xml.getElementsByTagName('BsWfs:BsWfsElement')
@@ -487,13 +486,17 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
             }
             let position =  item.getElementsByTagName('gml:pos')[0].textContent!.trim();
 
-            let lat = parseFloat(position.split(" ")[0])
-            let lon = parseFloat(position.split(" ")[1])
+            let lat = (parseFloat(position.split(" ")[0]) - 0.05);
+            let lon = (parseFloat(position.split(" ")[1]) - 0.05);
+            lat = Math.round( lat * 1e5 ) / 1e5;
+            lon = Math.round( lon * 1e5 ) / 1e5;
+
+            position = lat + ", " + lon;
 
             let offset = responseDates.indexOf(dateNum)+1;
 
             let pred = new RainPrediction(position, lat,lon,dateNum, digitValue, offset);
-            predictions.push(pred);
+            predictions.push(pred)
           }
 
         }
@@ -501,7 +504,6 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
 
       setPredictionMarkers([... predictions]);
       setPredictionDates(responseDates)
-      console.log(responseDates)
     })
   });
   
@@ -542,7 +544,7 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
 
 
     //must sort to get around zindex not affecting popups and as such popups get hidden behind other markers
-    //validMarkers.sort((a, b) => (a.lat < b.lat) ? 1 : -1);
+    validMarkers.sort((a, b) => (a.lat < b.lat) ? 1 : -1);
     return validMarkers;
   }
 
@@ -576,7 +578,7 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
 
 
     //must sort to get around zindex not affecting popups and as such popups get hidden behind other markers
-    //validMarkers.sort((a, b) => (a.lat < b.lat) ? 1 : -1);
+    validMarkers.sort((a, b) => (a.lat < b.lat) ? 1 : -1);
     return validMarkers;
 
 
@@ -624,7 +626,7 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
           
           <Pane 
                   key={elem.position + currentTime + "_markerpane" + elem.valid/*`marker-${elem.position}` + Date.now().toString()*/}
-                   name={elem.position + currentTime + "_markerpane"} /*elem.position + currentTime + "_marker"*/ 
+                   name={elem.position + currentTime + "_markerpane" + elem.valid} /*elem.position + currentTime + "_marker"*/ 
                    style={{ zIndex: 1000+idx }}
                    className={elem.valid ? "fadein" : "fadeout"}>
 
@@ -658,7 +660,7 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
           return (
             <Pane 
             key={elem.position + currentTime + "_predictionpane" + elem.valid/*`marker-${elem.position}` + Date.now().toString()*/}
-             name={elem.position + currentTime + "_predictionpane"} /*elem.position + currentTime + "_marker"*/ 
+             name={elem.position + currentTime + "_predictionpane" + elem.valid} /*elem.position + currentTime + "_marker"*/ 
              style={{ zIndex: 1000+idx }}
              className={elem.valid ? "fadein" : "fadeout"}>
 

@@ -6,6 +6,8 @@
 import React from "react";
 
 import Button from '@mui/material/Button';
+import {ReactComponent as MarkerLayerIcon} from './assets/hide.svg';
+import {ReactComponent as CloudLayerIcon} from './assets/cloud.svg';
 
 
 export interface AboutProps {
@@ -33,23 +35,37 @@ export default function AboutDialog(props: AboutProps) {
             <h2 className={` h-1/6 text-center text-lg slate-900`}>Mikä tämä on?</h2>
             <div className="h-4/6 mt-10 mb-10 mx-10 overflow-y-scroll">
               <p className={"mb-2"}>
-                Sivun tarkoitus on visualisoida mittausajankohtaa edeltävän vuorokauden sademääriä eri puolella
+                Sivun tarkoitus on visualisoida mittausajankohtaa edeltävän vuorokauden sademääriä ja ennusteita eri puolella
                 Suomea. Sivusto hyödyntää Ilmatieteen laitoksen avoimen datan palvelua.
                 </p>
+
                 <p className={"mb-2"}>
-                Mittausdata päivittyy mittausasemasta riippuen pääsääntöisesti kerran vuorokaudessa. Asemaa klikkaamalla näet asemakohtaisen 
-                edellisen raportointipäivämäärän.
+                <b >Iconit</b>
+
                 </p>
+
                 <p className={"mb-2"}>
-                <b>
+
+                  <div className="flex items-center">
+                    <MarkerLayerIcon className="h-12 w-12" />
+                    <span className="ml-2">Edellisen vuorokauden sademäärä sijainnissa. Päivittyy pääsääntöisesti kerran vuorokaudessa.</span>
+                  </div>
+
+                  <div className="flex items-center">
+                    <CloudLayerIcon className="h-12 w-12" />
+                    <span className="ml-2">Sademäärän (1h) ennuste sijainnissa valitun ajan kuluttua</span>
+                  </div>
+
+
+                  
+
+                </p>
+
+                <p className={"mb-2"}>
                   Kartalla näkyvästä kontrolliboksista voit säätää hyväksyttävän sademäärän. 
                   Valitun arvon alittavat havaintoasemat näkyvät kartalla vihreinä.
-                </b>
                 </p>
-                <p className={"mb-2"}>
-                Idea sivuston toteuttamiseen tuli siitä, että jotkut ulkona suoritettavat harrastukset eivät sovi yhten märän ympäristön kanssa.
-                Sademäärän arviointi olemassaolevien palveluiden perusteella on kuitenkin kömpelöä verrattuna siihen, että säähavainnot näkisi suoraan kartalta.
-              </p>
+
               <p className={"mb-2"}>
                 Sivusto on toteutettu Reactilla (ts).
               </p>
