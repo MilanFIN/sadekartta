@@ -88,6 +88,10 @@ function App() {
     }
   
   }
+  const displayAbout = () => {
+      setShowAbout(true);
+      setShowDropDown(false)
+  }
   
 
   
@@ -154,13 +158,13 @@ function App() {
 
           <div className={`absolute w-24 h-10 top-8 right-16 z-6000
                             ${(showDropDown) ? "visible" : "invisible"}`}>
-            <CloseHandler active={showDropDown} onClose={() => hideForeGroundElements()}>
-              <DropDownMenu open={showDropDown} showAbout={() => setShowAbout(true)}/>
+            <CloseHandler active={showDropDown && !showAbout} onClose={() => setShowDropDown(false)}>
+              <DropDownMenu open={showDropDown} showAbout={() => displayAbout()}/>
             </CloseHandler>
           </div>
 
 
-          <CloseHandler active={showAbout} onClose={() => hideForeGroundElements()}>
+          <CloseHandler active={showAbout} onClose={() => setShowAbout(false)}>
 
                   <About open={showAbout}
             onClose={() => setShowAbout(false)} />
