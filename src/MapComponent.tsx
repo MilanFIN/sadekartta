@@ -289,6 +289,7 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
 
   let initialObj: RainValue[] | (() => RainValue[]) = [];
   let initialPredictionObj: RainPrediction[] | (() => RainPrediction[]) = [];
+  let initialRainMap: Map<number, RainPrediction[]> | (() => Map<number, RainPrediction[]>) = new Map();
 
   const [markers, setMarkers]  = useState<RainValue[]>(initialObj);
   const [acceptedLimit, setAcceptedLimit]  = useState(0.2);
@@ -301,8 +302,10 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
 
   
 
-  const [predictionMarkers, setPredictionMarkers] = useState<RainPrediction[]>(initialPredictionObj);
+  //const [predictionMarkers, setPredictionMarkers] = useState<RainPrediction[]>(initialPredictionObj);
+  const [predictionMarkers, setPredictionMarkers] = useState<Map<number, RainPrediction[]>>(initialRainMap);
 
+  
   const [predictionDates, setPredictionDates] = useState<number[]>([]);
 
 
@@ -462,6 +465,8 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
     response.text().then(responseText => {
       let responseDates = Array<number>();
       let predictions = Array<RainPrediction>();
+      let predictionMap = new Map<number, RainPrediction[]>();
+
       //let predictions:Map<String, RainValue> = new Map();
 
       const parser = new DOMParser();
@@ -497,12 +502,24 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
 
             let pred = new RainPrediction(position, lat,lon,dateNum, digitValue, offset);
             predictions.push(pred)
+
+            if (predictionMap.has(offset)) {
+              let previousPredictions = predictionMap.get(offset)!;
+              previousPredictions?.push(pred)
+              predictionMap.set(offset, previousPredictions)
+            }
+            else {
+              predictionMap.set(offset, [pred])
+            }
           }
 
         }
       }
 
-      setPredictionMarkers([... predictions]);
+
+      //predictionMap.set(1, predictions);
+      //setPredictionMarkers([... predictions]);
+      setPredictionMarkers(predictionMap)
       setPredictionDates(responseDates)
     })
   });
@@ -544,18 +561,14 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
 
 
     //must sort to get around zindex not affecting popups and as such popups get hidden behind other markers
-    validMarkers.sort((a, b) => (a.lat < b.lat) ? 1 : -1);
+    //validMarkers.sort((a, b) => (a.lat < b.lat) ? 1 : -1);
     return validMarkers;
   }
 
   const getValidPredictions = () => {
     let correctDateMarkers = Array<RainPrediction>();
 
-    predictionMarkers.forEach(element => {
-      if (element.offset === predictionDistance) {
-        correctDateMarkers.push(element)
-      }
-    });
+    correctDateMarkers = predictionMarkers.get(predictionDistance)!;
 
     let validMarkers = Array<RainPrediction>();
 
@@ -573,12 +586,11 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
         marker.valid = true;
         validMarkers.push(marker);
       }
-
     });
 
 
     //must sort to get around zindex not affecting popups and as such popups get hidden behind other markers
-    validMarkers.sort((a, b) => (a.lat < b.lat) ? 1 : -1);
+    //validMarkers.sort((a, b) => (a.lat < b.lat) ? 1 : -1);
     return validMarkers;
 
 
