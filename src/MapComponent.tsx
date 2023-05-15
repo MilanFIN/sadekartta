@@ -297,8 +297,14 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
   const [proximityLimit, setProximityLimit]  = useState(1);
   //const [initialized, setInitialized] = useState(false);
   let initialized = false;
+
+  const [markerCache, setMarkerCache] = useState<Map<number, RainValue[]>>(new Map());
+
+  //let markerCache:Map<number, RainValue[]> = new Map();
+
   const [showHistoryMarkers, setShowHistoryMarkers] = useState(true);
   const [showPredictionMarkers, setShowPredictionMarkers] = useState(true);
+  const [contentLoaded, setContentLoaded] = useState(false); 
 
   
 
@@ -377,6 +383,8 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
 
     let stationBatches = [STATIONS.slice(95), STATIONS.slice(95)]; //[STATIONS.slice(0)];//
 
+    let processedBatches = 0;
+
     stationBatches.forEach(subStations => {
       let url = "https://opendata.fmi.fi/wfs?service=WFS&version=2.0.0&request=getFeature&storedquery_id=fmi::observations::weather::daily::simple";
 
@@ -440,7 +448,13 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
           let sortedValues = values.concat(markers).sort((a, b) => (a.date < b.date) ? 1 : -1);
           setMarkers([...sortedValues] )//markers =>
 
-          props.loadingDone();
+          processedBatches++;
+          if (processedBatches >= 2) {
+            props.loadingDone();
+            setContentLoaded(true);
+
+          }
+
         });
     });
 
@@ -540,7 +554,11 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
   const getValidMarkers = () => {
 
     let validMarkers = Array<RainValue>();
-    
+
+    if (markerCache.has(proximityLimit) && contentLoaded) {
+      return markerCache.get(proximityLimit)!;
+    }
+
 
     markers.forEach(marker => {
       let collides = false;
@@ -559,6 +577,10 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
 
     });
 
+    if (contentLoaded) {
+      markerCache.set(proximityLimit, validMarkers);
+      setMarkerCache(markerCache);
+    }
 
     //must sort to get around zindex not affecting popups and as such popups get hidden behind other markers
     //validMarkers.sort((a, b) => (a.lat < b.lat) ? 1 : -1);
@@ -566,27 +588,30 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
   }
 
   const getValidPredictions = () => {
-    let correctDateMarkers = Array<RainPrediction>();
+    let validMarkers = new Array<RainPrediction>();
 
-    correctDateMarkers = predictionMarkers.get(predictionDistance)!;
+    if (predictionMarkers.has(predictionDistance)) {
+      let correctDateMarkers = new Array<RainPrediction>();
+      correctDateMarkers = predictionMarkers.get(predictionDistance)!;
 
-    let validMarkers = Array<RainPrediction>();
 
-    correctDateMarkers.forEach(marker => {
-      let collides = false;
-      validMarkers.every(validMarker => {
-        if (checkCollision(validMarker.lat, validMarker.lon, marker.lat, marker.lon)) { //
-          collides = true;
-          marker.valid = false;
-          return false;
+      correctDateMarkers.forEach(marker => {
+        let collides = false;
+        validMarkers.every(validMarker => {
+          if (checkCollision(validMarker.lat, validMarker.lon, marker.lat, marker.lon)) { //
+            collides = true;
+            marker.valid = false;
+            return false;
+          }
+          return true;
+        });
+        if (!collides) {
+          marker.valid = true;
+          validMarkers.push(marker);
         }
-        return true;
       });
-      if (!collides) {
-        marker.valid = true;
-        validMarkers.push(marker);
-      }
-    });
+  
+    }
 
 
     //must sort to get around zindex not affecting popups and as such popups get hidden behind other markers
@@ -598,8 +623,6 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
 
 
   const zoomChanged = (zoomLevel:number) => {
-
-    console.log(zoomChanged)
 
     let scaleMap:Map<number, number> = new Map<number, number>([
       [0, 40],
