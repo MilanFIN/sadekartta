@@ -299,6 +299,7 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
   let initialized = false;
 
   const [markerCache, setMarkerCache] = useState<Map<number, RainValue[]>>(new Map());
+  const [predictionCache, setPredictionCache] = useState<Map<string, RainPrediction[]>>(new Map());
 
   //let markerCache:Map<number, RainValue[]> = new Map();
 
@@ -360,6 +361,16 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
   
 
     return message;
+  }
+
+  const checkContentLoaded = (batches:number) => {
+    if (batches >= 3) {
+      props.loadingDone();
+      setContentLoaded(true);
+      zoomChanged(5);
+
+    }
+
   }
 
   useEffect(() => {
@@ -449,11 +460,7 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
           setMarkers([...sortedValues] )//markers =>
 
           processedBatches++;
-          if (processedBatches >= 2) {
-            props.loadingDone();
-            setContentLoaded(true);
-
-          }
+          checkContentLoaded(processedBatches);
 
         });
     });
@@ -535,6 +542,9 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
       //setPredictionMarkers([... predictions]);
       setPredictionMarkers(predictionMap)
       setPredictionDates(responseDates)
+      processedBatches++;
+      checkContentLoaded(processedBatches);
+
     })
   });
   
@@ -590,6 +600,12 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
   const getValidPredictions = () => {
     let validMarkers = new Array<RainPrediction>();
 
+
+    if (predictionCache.has(proximityLimit.toString() + predictionDistance.toString()) && contentLoaded) {
+      return predictionCache.get(proximityLimit.toString() + predictionDistance.toString())!;
+    }
+
+
     if (predictionMarkers.has(predictionDistance)) {
       let correctDateMarkers = new Array<RainPrediction>();
       correctDateMarkers = predictionMarkers.get(predictionDistance)!;
@@ -613,6 +629,12 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
   
     }
 
+    
+    if (contentLoaded) {
+      predictionCache.set(proximityLimit.toString() + predictionDistance.toString(), validMarkers);
+      setPredictionCache(predictionCache);
+    }
+    
 
     //must sort to get around zindex not affecting popups and as such popups get hidden behind other markers
     //validMarkers.sort((a, b) => (a.lat < b.lat) ? 1 : -1);
@@ -629,11 +651,11 @@ const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>((props, r
       [1, 10],
       [2, 6],
       [3, 5],
-      [4, 1.9],//1.9
-      [5, 1],
-      [6, 0.5],
-      [7, 0.2],
-      [8, 0.1]
+      [4, 2.7],//1.9
+      [5, 1.5],
+      [6, 0.9],
+      [7, 0.6],
+      [8, 0.3]
     ]);
 
 
