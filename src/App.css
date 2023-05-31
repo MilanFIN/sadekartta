@@ -73,7 +73,7 @@ h2 {
 
 .fadein {
 
-    animation: fadein 400ms;
+    /*animation: fadein 400ms;*/
 
 }
 @-webkit-keyframes fadeOut {
@@ -88,10 +88,12 @@ h2 {
 }
 
 .fadeout{
+  /*
   display: block;
   -webkit-animation: fadeOut 1s;
   animation: fadeOut 1s;
   animation-fill-mode: forwards;
+  */
 }
 
 @keyframes fadein {
